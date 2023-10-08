@@ -11,11 +11,12 @@ list_t convertPlainTextToTokens(char* plainInput);
 list_t convertCLInputToTokens(list_t tokenStream, char* CLInput);
 
 void resetLexerMachineStates();
-inline void processSpace();
+inline void processBlank();
 inline void processNewLine();
 inline void processLabelSep();
 inline void processOperSep();
 inline void processNumeric();
 inline void processIdentifier();
+inline void processComment();
 
 #endif //INTERPRETER_LEXER_H

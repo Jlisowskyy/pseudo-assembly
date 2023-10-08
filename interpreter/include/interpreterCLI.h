@@ -13,8 +13,6 @@
 #define NO_ARGUMENTS 1
 #define CLI_EXIT "_exit_\n"
 
-#define DEBUG_
-
 void interpreterMain(int argc, const char** argv);
 int interpreterFile(const char* fileName);
 void interpreterInteractive();

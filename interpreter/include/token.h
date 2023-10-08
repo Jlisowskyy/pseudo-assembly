@@ -44,9 +44,9 @@ typedef enum instructionCode{
 }instructionCode_t;
 
 typedef struct token{
-    const char* identifier;
+    const char* strVal;
     tokenType_t type;
-    int64_t val;
+    int64_t numVal;
     uint32_t line;
 }token_t;
 

@@ -1,8 +1,10 @@
 //
 // Created by Jlisowskyy on 10/7/23.
 //
-#include "../include/errors.h"
 #include <stdio.h>
+
+#include "../include/errors.h"
+#include "../include/compMacros.h"
 
 void writeHelpOut(char *unrecognizedFile) {
     fprintf(stderr, "[ERROR] Unrecognized file: %s. Expected usage:\n\t\"pas-int FILE_NAME\" to interpret from file\n", unrecognizedFile);
@@ -16,6 +18,11 @@ void throwError(const char *msg, size_t line) {
 }
 
 void throwUnrecognizedCharError(size_t line, char unrecognized) {
-    fprintf(stderr, "[ERROR] Encountered unused/unrecognized character: %c, on line: %zu", unrecognized, line);
+    fprintf(stderr, "[ERROR] Encountered unused/unrecognized character: %c, on line: %zu\n", unrecognized, line);
+
+#ifdef  DEBUG_
+    fprintf(stderr, "dec char val: %d", (short)unrecognized);
+#endif
+
     exit(EXIT_FAILURE);
 }

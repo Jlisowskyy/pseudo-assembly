@@ -10,6 +10,7 @@
 #include "../include/list.h"
 #include "../include/lexer.h"
 #include "../include/interpreter.h"
+#include "../include/compMacros.h"
 
 void interpreterMain(int argc, const char **argv)
     // entry point to the program, invokes correct behaving interaface

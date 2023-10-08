@@ -14,4 +14,5 @@ add_executable(interpreter main.c
         include/list.h
         src/list.c
         include/lexer.h
-        src/lexer.c)
+        src/lexer.c
+        include/compMacros.h)

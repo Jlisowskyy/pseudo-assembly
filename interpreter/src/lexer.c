@@ -15,12 +15,19 @@
 
 #define FALSE 0
 #define TRUE 1
-#define isSpace(x) x == ' '
-#define isNewLine(x) x == '\n'
-#define isOperSep(x) x == ','
-#define isLabelSep(x) x == ':'
-#define isNumeric(x) x >= '1' && x <= '9'
-#define isAlph(x) x >= 'A' && x <= 'z' && (x <= 'Z' || x >= 'a') // TODO: check
+#define isBlank(x) (x == ' ' || x =='\t')
+#define isNewLine(x) (x == '\n')
+#define isNotNewLine(x) (x != '\n')
+#define isOperSep(x) (x == ',')
+#define isLabelSep(x) (x == ':')
+#define isNumeric(x) (x >= '0' && x <= '9')
+//#define isAlph(x) (x >= 'A' && x <= 'z' && (x <= 'Z' || x >= 'a')) // TODO: check
+#define isAlph(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
+#define isNonAlphIdent(x) (x == '-' || x == '_')
+#define isComment(x) (x == '#')
+#define isNotEOF(x) (x != EOF)
+#define isNotTerm(x) (x != '\0');
+#define isIdentifier(x) (isAlph(x) || isNonAlphIdent(x))
 
 // ------------------------------
 // char consts
@@ -58,7 +65,6 @@ const char* BEGIN_LABEL = "_BEGIN";
 
 char* tokenSource = NULL;
 size_t inputPos = 0;
-int isNewToken = TRUE;
 uint32_t line = 1;
 list_t tokenOutput = { .tail = NULL, .head = NULL };
 
@@ -70,33 +76,33 @@ void resetLexerMachineStates() {
     list_t empty_list = { .head = NULL, .tail = NULL };
 
     inputPos = 0;
-    isNewToken = TRUE;
     line = 1;
     tokenSource = NULL;
     cleanList(tokenOutput);
     tokenOutput = empty_list;
 }
 
-void processSpace() {
+void processBlank() {
     tokenSource[inputPos] = '\0';
     ++inputPos;
-    isNewToken = TRUE;
 }
 
 void processNewLine() {
-    token_t lineSep = { .line = line, .type = LINE_SEP, .identifier = NULL, .val = 0};
+    token_t lineSep = { .line = line, .type = LINE_SEP, .strVal = NULL, .numVal = 0 };
 
     tokenSource[inputPos] = '\0';
     ++inputPos;
     ++line;
-    isNewToken = TRUE;
     tokenOutput = pushBack(tokenOutput, lineSep);
 }
 
 void processLabelSep() {
     tokenSource[inputPos] = '\0';
     ++inputPos;
-    isNewToken = TRUE;
+
+    if (tokenOutput.tail->tkn.type != IDENTIFIER){
+        throwError("Unexpected use of label signing operator (':')", line);
+    }
 
     tokenOutput.tail->tkn.type = LABEL;
 }
@@ -111,13 +117,12 @@ void processOperSep()
 
     tokenSource[inputPos] = '\0';
     ++inputPos;
-    isNewToken = TRUE;
 
     tokenOutput.tail->tkn.type = REGISTER;
 }
 
 void processNumeric() {
-    token_t constToken = { .type = CONSTANT, .line = line, .identifier = NULL };
+    token_t constToken = { .type = CONSTANT, .line = line, .strVal = NULL, .numVal = 0 };
     long inputVal;
     char * resPtr;
     char * begin = tokenSource + inputPos;
@@ -132,33 +137,40 @@ void processNumeric() {
     inputPos += resPtr - begin;
     // TODO: check for space after? expects space after?
 
-    constToken.val = inputVal;
+    constToken.numVal = inputVal;
     tokenOutput = pushBack(tokenOutput, constToken);
 }
 
 void processIdentifier() {
+    token_t tkn = { .type = IDENTIFIER, .line = line, .strVal = tokenSource + inputPos, .numVal = 0 };
 
+    while(isIdentifier(tokenSource[inputPos])){
+        inputPos++;
+    }
+    tokenOutput = pushBack(tokenOutput, tkn);
 }
 
+void processComment() {
+    while(isNotNewLine(tokenSource[inputPos]) && isNotEOF(tokenSource[inputPos])){
+        tokenSource[inputPos++] = '\0';
+    }
+}
 
 // ------------------------------------------
 // lexer main functions implementation
 // ------------------------------------------
 
 list_t convertPlainTextToTokens(char *plainInput) {
-    token_t initLabel = { .identifier = BEGIN_LABEL, .type = LABEL, .line = 1, .val = 0 };
+    token_t initLabel = { .strVal = BEGIN_LABEL, .type = LABEL, .line = 1, .numVal = 0 };
     tokenOutput = initList(initLabel);
     tokenSource = plainInput;
 
     while(tokenSource[inputPos] != EOF){
-        if (isSpace(tokenSource[inputPos])){
-            processSpace();
+        if (isBlank(tokenSource[inputPos])){
+            processBlank();
         }
         else if(isNewLine(tokenSource[inputPos])){
             processNewLine();
-        }
-        else if(isLabelSep(tokenSource[inputPos])){
-            processLabelSep();
         }
         else if (isOperSep(tokenSource[inputPos])){
             processOperSep();
@@ -168,6 +180,15 @@ list_t convertPlainTextToTokens(char *plainInput) {
         }
         else if(isAlph(tokenSource[inputPos])){
             processIdentifier();
+        }
+        else if(isNonAlphIdent(tokenSource[inputPos])){
+            processIdentifier();
+        }
+        else if(isLabelSep(tokenSource[inputPos])){
+            processLabelSep();
+        }
+        else if (isComment(tokenSource[inputPos])){
+            processComment();
         }
         else{
             throwUnrecognizedCharError(line, tokenSource[inputPos]);
