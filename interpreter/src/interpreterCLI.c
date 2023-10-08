@@ -11,7 +11,9 @@
 #include "../include/lexer.h"
 #include "../include/interpreter.h"
 
-void interpreterMain(int argc, const char **argv) {
+void interpreterMain(int argc, const char **argv)
+    // entry point to the program, invokes correct behaving interaface
+{
     int result;
 
     if (argc == NO_ARGUMENTS){
@@ -71,5 +73,10 @@ void interpret(char *unprocessedContent) {
     list_t tokens;
 
     tokens = convertPlainTextToTokens(unprocessedContent);
+
+#ifdef DEBUG_
+    printTknList(tokens);
+#endif
+
     interpFileTokens(tokens);
 }

@@ -12,13 +12,11 @@
 
 typedef enum tokenType {
     UNKNOWN,
-    INSTRUCTION,
+    IDENTIFIER,
     REGISTER,
     LABEL,
     CONSTANT,
     LINE_SEP,
-    LABEL_SEP,
-    OPER_SEP,
 } tokenType_t;
 
 typedef enum instructionCode{
@@ -48,7 +46,7 @@ typedef enum instructionCode{
 typedef struct token{
     const char* identifier;
     tokenType_t type;
-    int32_t val;
+    int64_t val;
     uint32_t line;
 }token_t;
 

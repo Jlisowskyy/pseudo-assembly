@@ -7,11 +7,11 @@
 #include <inttypes.h>
 
 #include "../include/lexer.h"
+#include "../include/errors.h"
 
 // ------------------------------
 // macros and helpers
 // ------------------------------
-
 
 #define FALSE 0
 #define TRUE 1
@@ -19,8 +19,8 @@
 #define isNewLine(x) x == '\n'
 #define isOperSep(x) x == ','
 #define isLabelSep(x) x == ':'
-
-
+#define isNumeric(x) x >= '1' && x <= '9'
+#define isAlph(x) x >= 'A' && x <= 'z' && (x <= 'Z' || x >= 'a') // TODO: check
 
 // ------------------------------
 // char consts
@@ -50,14 +50,14 @@ const char* instructionAliases[INSTRUCTION_COUNT] = {
         "PR",
 };
 
-const char* BEGIN_LABEL = "_BEGIN:\n";
+const char* BEGIN_LABEL = "_BEGIN";
 
 // ------------------------------
 // lexer machine states
 // ------------------------------
 
 char* tokenSource = NULL;
-size_t input_pos = 0;
+size_t inputPos = 0;
 int isNewToken = TRUE;
 uint32_t line = 1;
 list_t tokenOutput = { .tail = NULL, .head = NULL };
@@ -69,7 +69,7 @@ list_t tokenOutput = { .tail = NULL, .head = NULL };
 void resetLexerMachineStates() {
     list_t empty_list = { .head = NULL, .tail = NULL };
 
-    input_pos = 0;
+    inputPos = 0;
     isNewToken = TRUE;
     line = 1;
     tokenSource = NULL;
@@ -78,26 +78,65 @@ void resetLexerMachineStates() {
 }
 
 void processSpace() {
-    tokenSource[input_pos] = '\0';
-    ++input_pos;
+    tokenSource[inputPos] = '\0';
+    ++inputPos;
     isNewToken = TRUE;
 }
 
 void processNewLine() {
-    token_t lineSep = { .line = line, .type = LINE_SEP };
+    token_t lineSep = { .line = line, .type = LINE_SEP, .identifier = NULL, .val = 0};
 
-    tokenSource[input_pos] = '\0';
-    ++input_pos;
+    tokenSource[inputPos] = '\0';
+    ++inputPos;
     ++line;
     isNewToken = TRUE;
     tokenOutput = pushBack(tokenOutput, lineSep);
 }
 
 void processLabelSep() {
+    tokenSource[inputPos] = '\0';
+    ++inputPos;
+    isNewToken = TRUE;
 
+    tokenOutput.tail->tkn.type = LABEL;
 }
 
-void processOperSep() {
+void processOperSep()
+    // operand separator expects, that previous token is const value within range 0-(register count - 1),
+    // other input is nothing than error
+{
+    if (tokenOutput.tail->tkn.type != CONSTANT){
+        throwError("unexpected use of operand separator (',')", line);
+    }
+
+    tokenSource[inputPos] = '\0';
+    ++inputPos;
+    isNewToken = TRUE;
+
+    tokenOutput.tail->tkn.type = REGISTER;
+}
+
+void processNumeric() {
+    token_t constToken = { .type = CONSTANT, .line = line, .identifier = NULL };
+    long inputVal;
+    char * resPtr;
+    char * begin = tokenSource + inputPos;
+    size_t offset;
+
+    inputVal = strtol(begin, &resPtr, 10);
+
+    if (resPtr == tokenSource){
+        throwError("Error occurred during numeric conversion of input", line);
+    }
+
+    inputPos += resPtr - begin;
+    // TODO: check for space after? expects space after?
+
+    constToken.val = inputVal;
+    tokenOutput = pushBack(tokenOutput, constToken);
+}
+
+void processIdentifier() {
 
 }
 
@@ -107,19 +146,31 @@ void processOperSep() {
 // ------------------------------------------
 
 list_t convertPlainTextToTokens(char *plainInput) {
-    token_t initLabel = { .identifier = BEGIN_LABEL };
+    token_t initLabel = { .identifier = BEGIN_LABEL, .type = LABEL, .line = 1, .val = 0 };
     tokenOutput = initList(initLabel);
     tokenSource = plainInput;
 
-    while(tokenSource[input_pos] != EOF){
-        if (isSpace(tokenSource[input_pos])){
+    while(tokenSource[inputPos] != EOF){
+        if (isSpace(tokenSource[inputPos])){
             processSpace();
         }
-        else if(isNewLine(tokenSource[input_pos])){
+        else if(isNewLine(tokenSource[inputPos])){
             processNewLine();
         }
-        else if(isLabelSep(tokenSource[input_pos])){
-
+        else if(isLabelSep(tokenSource[inputPos])){
+            processLabelSep();
+        }
+        else if (isOperSep(tokenSource[inputPos])){
+            processOperSep();
+        }
+        else if (isNumeric(tokenSource[inputPos])){
+            processNumeric();
+        }
+        else if(isAlph(tokenSource[inputPos])){
+            processIdentifier();
+        }
+        else{
+            throwUnrecognizedCharError(line, tokenSource[inputPos]);
         }
     }
 

@@ -2,6 +2,7 @@
 // Created by Jlisowskyy on 10/8/23.
 //
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../include/list.h"
 
@@ -32,11 +33,25 @@ void cleanList(list_t target) {
 
 list_t initList(token_t data) {
     list_t result;
-
     node_t* newNode = malloc(sizeof(node_t));
+
     newNode->next = NULL;
     newNode->tkn = data;
     result.tail = result.head = newNode;
-
     return result;
+}
+
+void printTknList(list_t target) {
+    node_t* p = target.head;
+
+    while(p){
+        PRINT_FUNC(p->tkn);
+
+        if (p->next) printf(" --> ");
+        p = p->next;
+    }
+}
+
+void printToken(token_t x) {
+
 }

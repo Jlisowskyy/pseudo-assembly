@@ -15,5 +15,7 @@ inline void processSpace();
 inline void processNewLine();
 inline void processLabelSep();
 inline void processOperSep();
+inline void processNumeric();
+inline void processIdentifier();
 
 #endif //INTERPRETER_LEXER_H
