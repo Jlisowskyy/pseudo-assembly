@@ -26,7 +26,7 @@
 #define isNonAlphIdent(x) (x == '-' || x == '_')
 #define isComment(x) (x == '#')
 #define isNotEOF(x) (x != EOF)
-#define isNotTerm(x) (x != '\0');
+#define isNotTerm(x) (x != '\0')
 #define isIdentifier(x) (isAlph(x) || isNonAlphIdent(x))
 
 // ------------------------------
@@ -165,7 +165,7 @@ list_t convertPlainTextToTokens(char *plainInput) {
     tokenOutput = initList(initLabel);
     tokenSource = plainInput;
 
-    while(tokenSource[inputPos] != EOF){
+    while(isNotTerm(tokenSource[inputPos])){
         if (isBlank(tokenSource[inputPos])){
             processBlank();
         }

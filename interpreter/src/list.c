@@ -71,16 +71,16 @@ void printToken(token_t x) {
 
     switch (x.type) {
         case IDENTIFIER:
-            printf("%s ", x.strVal);
+            printf(",%s ", x.strVal);
             break;
         case REGISTER:
-            printf("%ld ", x.numVal);
+            printf(",%ld ", x.numVal);
             break;
         case LABEL:
-            printf("%s: ", x.strVal);
+            printf(",%s: ", x.strVal);
             break;
         case CONSTANT:
-            printf("%ld ", x.numVal);
+            printf(",%ld ", x.numVal);
             break;
         default:
             break;
