@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <inttypes.h>
 
 #include "../include/lexer.h"
 #include "../include/errors.h"
@@ -32,30 +31,6 @@
 // ------------------------------
 // char consts
 // ------------------------------
-
-const char* instructionAliases[INSTRUCTION_COUNT] = {
-        "A",
-        "AR",
-        "S",
-        "SR",
-        "M",
-        "MR",
-        "D",
-        "DR",
-        "C",
-        "CR",
-        "L",
-        "LR",
-        "ST",
-        "LA",
-        "J",
-        "JP",
-        "JN",
-        "JP",
-        "DC",
-        "DS",
-        "PR",
-};
 
 const char* BEGIN_LABEL = "_BEGIN";
 
@@ -123,12 +98,12 @@ void processOperSep()
 
 void processNumeric() {
     token_t constToken = { .type = CONSTANT, .line = line, .strVal = NULL, .numVal = 0 };
-    long inputVal;
+    MACHINE_BASIC_TYPE inputVal;
     char * resPtr;
     char * begin = tokenSource + inputPos;
     size_t offset;
 
-    inputVal = strtol(begin, &resPtr, 10);
+    inputVal = MACHINE_STR_TO_NUM_FUNC(begin, &resPtr, 10);
 
     if (resPtr == tokenSource){
         throwError("Error occurred during numeric conversion of input", line);

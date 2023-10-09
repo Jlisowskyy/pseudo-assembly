@@ -6,8 +6,8 @@
 #define INTERPRETER_TOKEN_H
 
 #include <stdint.h>
+#include "compMacros.h"
 
-#define REGISTER_AMOUNT 16
 #define INSTRUCTION_COUNT 21
 
 typedef enum tokenType {
@@ -46,7 +46,7 @@ typedef enum instructionCode{
 typedef struct token{
     const char* strVal;
     tokenType_t type;
-    int64_t numVal;
+    MACHINE_BASIC_TYPE numVal;
     uint32_t line;
 }token_t;
 

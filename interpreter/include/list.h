@@ -6,6 +6,7 @@
 #define INTERPRETER_LIST_H
 
 #include "token.h"
+#include "compMacros.h"
 
 #define DATA_T token_t
 #define PRINT_FUNC printToken
