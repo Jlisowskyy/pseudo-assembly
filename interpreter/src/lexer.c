@@ -32,7 +32,8 @@
 // char consts
 // ------------------------------
 
-const char* BEGIN_LABEL = "_BEGIN";
+#define BEGIN_LABEL "_BEGIN"
+#define END_LABEL "_END"
 
 // ------------------------------
 // lexer machine states

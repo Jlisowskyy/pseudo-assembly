@@ -54,16 +54,18 @@ int interpreterFile(const char *fileName) {
 
 void interpreterInteractive() {
     char buffer[CLI_BUFFER_SIZE];
+    int inputState;
     list_t tokens = { .head = NULL, .tail = NULL };
 
-    printf("Welcome to interactive mode! To exit type: \"_exit_\"\nPlease enter your instructions lines separated by semi-colons:\n");
+    printf("Welcome to interactive mode! To exit type: \"q\"\n");
+    printf("To print whole code: \"p\"\nTo remove desired line: \"r\"\n");
+    printf("To add line after: \"a\"\n");
+    printf("Please enter your instructions lines separated by semi-colons:\n");
     fgets(buffer, CLI_BUFFER_CHAR_COUNT, stdin);
 
-    while(strcmp(buffer, CLI_EXIT) != 0){
-        printf("test: %s\n", buffer);
+    while(checkForCommandInput(buffer, tokens) != EXIT){
         tokens = convertCLInputToTokens(tokens, buffer);
         interpCLTokens(tokens);
-        printInterpState();
         fgets(buffer, CLI_BUFFER_CHAR_COUNT, stdin);
     }
 
@@ -80,4 +82,40 @@ void interpret(char *unprocessedContent) {
 #endif
 
     interpFileTokens(tokens);
+}
+
+// -------------------------------------------
+// other helping function implementation
+// -------------------------------------------
+
+int checkForCommandInput(char *buff, list_t tkns) {
+    if (buff[1] != '\n') return NO_COMMANDS;
+
+    switch (buff[0]) {
+        case EXIT:
+            return EXIT;
+        case ADD_LINE:
+            addLineToCode(tkns);
+            return COMMAND_PROCESSED;
+        case PRINT:
+            printWrittenCode(tkns);
+            return COMMAND_PROCESSED;
+        case REMOVE:
+            removeLineFromCode(tkns);
+            return COMMAND_PROCESSED;
+        default:
+            return NO_COMMANDS;
+    }
+}
+
+void printWrittenCode(list_t tkns) {
+
+}
+
+void addLineToCode(list_t tkns) {
+
+}
+
+void removeLineFromCode(list_t tkns) {
+
 }

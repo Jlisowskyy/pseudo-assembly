@@ -16,3 +16,7 @@ add_executable(interpreter main.c
         include/lexer.h
         src/lexer.c
         include/compMacros.h)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(deps REQUIRED IMPORTED_TARGET glib-2.0)
+target_link_libraries(interpreter PkgConfig::deps)

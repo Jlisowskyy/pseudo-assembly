@@ -40,7 +40,7 @@ typedef enum instructionCode{
     JUMP_ZERO,
     DECLARE,
     DEFINE,
-    PRINT,
+    PRINT_INST,
 }instructionCode_t;
 
 typedef struct token{
