@@ -40,12 +40,12 @@ int interpreterFile(const char *fileName) {
     if (!workFile) return UNRECOGNIZED_FILE;
 
     fseek(workFile, 0, SEEK_END);
-    fileSize = ftell(workFile) + 1;
+    fileSize = ftell(workFile);
     rewind(workFile);
 
-    plainInput = malloc(fileSize);
+    plainInput = malloc(fileSize + NULL_BYTES);
     fread(plainInput, sizeof(char), fileSize, workFile);
-    plainInput[fileSize] = '\0';
+    for(size_t i = 0; i < NULL_BYTES; ++i) plainInput[fileSize + i] = '\0';
     fclose(workFile);
 
     interpret(plainInput);

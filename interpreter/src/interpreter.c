@@ -8,35 +8,11 @@
 #include "../include/interpreter.h"
 #include "../include/compMacros.h"
 
-const char* instructionAliases[INSTRUCTION_COUNT] = {
-        "A",
-        "AR",
-        "S",
-        "SR",
-        "M",
-        "MR",
-        "D",
-        "DR",
-        "C",
-        "CR",
-        "L",
-        "LR",
-        "ST",
-        "LA",
-        "J",
-        "JP",
-        "JN",
-        "JP",
-        "DC",
-        "DS",
-        "PR",
-};
 
 // ---------------------------------------
 // global interpreter machine states
 // ---------------------------------------
 
-int isNewInstructionLine = TRUE;
 node_t* actToken = NULL;
 
 MACHINE_BASIC_TYPE registers[MACHINE_REGISTERS] = { 0 };
@@ -49,21 +25,22 @@ GHashTable* dataLabelsTable = NULL;
 
 void interpFileTokens(list_t tokens) {
     actToken = tokens.head->next;
+    resetInterpState();
     // TODO add head to code labels
 
     while(actToken){
         switch (actToken->tkn.type) {
 
             case IDENTIFIER:
+                processIdent();
                 break;
             case LABEL:
                 processLabel();
                 break;
             case LINE_SEP:
-                isNewInstructionLine = TRUE;
                 break;
             default:
-                throwError("Unkown token type occurred\n", actToken->tkn.line);
+                throwError("Unknown token type occurred\n", actToken->tkn.line);
         }
 
         actToken = actToken->next;
@@ -98,6 +75,15 @@ void addToCodeTable(node_t *p) {
 
 }
 
+node_t *getCodeLabel(const char *ident) {
+    return NULL;
+}
+
+MACHINE_BASIC_TYPE getDataVal(const char *ident) {
+    return 0;
+}
+
+
 int isDeclInstruction(const char *ident)
 // Checks if passed identifier contains some decl function in fast way
 // TODO: check for index overcome
@@ -111,10 +97,102 @@ void processIdent() {
 
 }
 
+// --------------------------------------------
+// Instruction descriptors implementation
+// --------------------------------------------
+
+void processADD() {
+
+}
+
+void processADD_REG() {
+
+}
+
+void processSUB() {
+
+}
+
+void processMULT() {
+
+}
+
+void processMULT_REG() {
+
+}
+
+void processDIV() {
+
+}
+
+void processDIV_REG() {
+
+}
+
+void processCOMP() {
+
+}
+
+void processCOMP_REG() {
+
+}
+
+void processLOAD() {
+
+}
+
+void processLOAD_REG() {
+
+}
+
+void processSTORE() {
+
+}
+
+void processLOAD_ADRESS() {
+
+}
+
+void processJUMP() {
+
+}
+
+void processJUMP_POS() {
+
+}
+
+void processJUMP_NEG() {
+
+}
+
+void processJUMP_ZERO() {
+
+}
+
+void processDECL() {
+
+}
+
+void processDEF() {
+
+}
+
+void processPRINT() {
+
+}
+
 // ---------------------------------------------------
 // Default settings - only working implementation
 // ---------------------------------------------------
 
 void printInterpState() {
 
+}
+
+void resetInterpState() {
+    if (codeLabelsTable) g_hash_table_remove_all(codeLabelsTable);
+    else codeLabelsTable = g_hash_table_new(g_str_hash, g_str_equal);
+
+    if (dataLabelsTable) g_hash_table_remove_all(dataLabelsTable);
+    else dataLabelsTable = g_hash_table_new(g_str_hash, g_str_equal);
 }
