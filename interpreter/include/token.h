@@ -44,7 +44,7 @@ typedef enum instructionCode{
 }instructionCode_t;
 
 typedef struct token{
-    const char* strVal;
+    char* strVal;
     tokenType_t type;
     MACHINE_BASIC_TYPE numVal;
     uint32_t line;

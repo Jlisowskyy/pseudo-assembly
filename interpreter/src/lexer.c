@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "../include/lexer.h"
 #include "../include/errors.h"
@@ -119,8 +120,10 @@ void processNumeric() {
 
 void processIdentifier() {
     token_t tkn = { .type = IDENTIFIER, .line = line, .strVal = tokenSource + inputPos, .numVal = 0 };
+    // TODO: check for nums in labels
 
     while(isIdentifier(tokenSource[inputPos])){
+        tokenSource[inputPos] = (char)toupper(tokenSource[inputPos]);
         inputPos++;
     }
     tokenOutput = pushBack(tokenOutput, tkn);

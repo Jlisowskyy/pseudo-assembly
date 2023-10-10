@@ -21,32 +21,8 @@ inline void processLabel();
 inline void processIdent();
 inline void addToDataTable(node_t* p);
 inline void addToCodeTable(node_t* p);
-inline node_t* getCodeLabel(const char* ident);
-inline MACHINE_BASIC_TYPE getDataVal(const char* ident);
-
-const char* instructionAliases[INSTRUCTION_COUNT] = {
-        "A",
-        "AR",
-        "S",
-        "SR",
-        "M",
-        "MR",
-        "D",
-        "DR",
-        "C",
-        "CR",
-        "L",
-        "LR",
-        "ST",
-        "LA",
-        "J",
-        "JP",
-        "JN",
-        "JZ",
-        "DC",
-        "DS",
-        "PR",
-};
+inline node_t* getCodeLabel(node_t *p);
+inline MACHINE_BASIC_TYPE getDataVal(node_t *p);
 
 // instruction processors
 inline void processADD();
