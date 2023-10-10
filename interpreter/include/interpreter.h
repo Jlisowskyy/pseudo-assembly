@@ -24,6 +24,23 @@ inline void addToCodeTable(node_t* p);
 inline node_t* getCodeLabel(node_t *p);
 inline MACHINE_BASIC_TYPE getDataVal(node_t *p);
 
+// syntax unpacking
+
+typedef struct RegReg{
+    MACHINE_BASIC_TYPE reg1;
+    MACHINE_BASIC_TYPE reg2;
+}RegReg;
+
+typedef struct RegIdent{
+    MACHINE_BASIC_TYPE reg;
+    char* ident;
+} RegIdent;
+
+inline RegReg expectRegReg();
+inline RegIdent expectRegIdent();
+inline MACHINE_BASIC_TYPE expectReg();
+inline char* expectIdent();
+inline void expectDecl();
 // instruction processors
 inline void processADD();
 inline void processADD_REG();
@@ -52,4 +69,3 @@ void printInterpState();
 void resetInterpState();
 
 #endif //INTERPRETER_INTERPRETER_H
-

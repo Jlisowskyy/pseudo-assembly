@@ -141,6 +141,7 @@ void processComment() {
 
 list_t convertPlainTextToTokens(char *plainInput) {
     token_t initLabel = { .strVal = BEGIN_LABEL, .type = LABEL, .line = 1, .numVal = 0 };
+    token_t endLabel = { .strVal = END_LABEL, .type = LABEL, .line = line, .numVal = 0 };
     tokenOutput = initList(initLabel);
     tokenSource = plainInput;
 

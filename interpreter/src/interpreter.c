@@ -143,10 +143,14 @@ int isDeclInstruction(const char *ident)
 }
 
 void processIdent() {
-    if (actToken->tkn.strVal[2] == '\0' && actToken->tkn.strVal[1] == '\0') // safe: array contains addition 3 null bytes
+    char* str = actToken->tkn.strVal;
+
+    if (str[2] == '\0' && str[1] == '\0') // safe: array contains addition 3 null bytes
         throwError("Expects instruction on beginning of the line", actToken->tkn.line);
 
-    switch (HASH(actToken->tkn.strVal)) {
+    actToken = actToken->next;
+
+    switch (HASH(str)) {
         case ADD_HASH:
             processADD();
             break;
@@ -178,7 +182,7 @@ void processIdent() {
             processJUMP_NEG();
             break;
         case JP_HASH:
-            processJUMP();
+            processJUMP_POS();
             break;
         case AR_HASH:
             processADD_REG();
@@ -215,44 +219,70 @@ void processIdent() {
     }
 }
 
+// ---------------------------------------------
+// syntax checking function implementation
+// ---------------------------------------------
+
+RegReg expectRegReg() {
+    RegReg result;
+    return result;
+}
+
+RegIdent expectRegIdent() {
+    RegIdent result;
+    return result;
+}
+
+MACHINE_BASIC_TYPE expectReg() {
+    return 0;
+}
+
+char *expectIdent() {
+    return NULL;
+}
+
+void expectDecl() {
+
+}
+
 // --------------------------------------------
 // Instruction descriptors implementation
 // --------------------------------------------
 
 void processADD() {
-
+    RegIdent args = expectRegIdent();
 }
 
 void processADD_REG() {
-
+    RegReg args = expectRegReg();
 }
 
 void processSUB() {
-
+    RegIdent args = expectRegIdent();
 }
 
 void processMULT() {
-
+    RegIdent args = expectRegIdent();
 }
 
 void processMULT_REG() {
-
+    RegReg args = expectRegReg();
 }
 
 void processDIV() {
-
+    RegIdent args = expectRegIdent();
 }
 
 void processDIV_REG() {
-
+    RegReg args = expectRegReg();
 }
 
 void processCOMP() {
-
+    RegIdent args = expectRegIdent();
 }
 
 void processCOMP_REG() {
-
+    RegReg args = expectRegReg();
 }
 
 void processLOAD() {
@@ -268,23 +298,24 @@ void processSTORE() {
 }
 
 void processLOAD_ADRESS() {
-
+    char* ident = expectIdent();
 }
 
 void processJUMP() {
-
+    char* ident = expectIdent();
 }
 
 void processJUMP_POS() {
+    char* ident = expectIdent();
 
 }
 
 void processJUMP_NEG() {
-
+    char* ident = expectIdent();
 }
 
 void processJUMP_ZERO() {
-
+    char* ident = expectIdent();
 }
 
 void processDECL() {
@@ -296,7 +327,12 @@ void processDEF() {
 }
 
 void processPRINT() {
+    MACHINE_BASIC_TYPE arg = expectReg();
 
+}
+
+void processSUB_REG() {
+    RegReg args = expectRegReg();
 }
 
 // ---------------------------------------------------
