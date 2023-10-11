@@ -88,14 +88,17 @@ void processOperSep()
     // operand separator expects, that previous token is const value within range 0-(register count - 1),
     // other input is nothing than error
 {
-    if (tokenOutput.tail->tkn.type != CONSTANT){
+    token_t sep = { .type = OPER_SEP, .line = line, .numVal = 0, .strVal = NULL };
+
+    // TODO: check for correct error reporting on ,
+    if (tokenOutput.tail->tkn.type != CONSTANT && tokenOutput.tail->tkn.type != IDENTIFIER){
         throwError("unexpected use of operand separator (',')", line);
     }
 
     tokenSource[inputPos] = '\0';
     ++inputPos;
 
-    tokenOutput.tail->tkn.type = REGISTER;
+    tokenOutput = pushBack(tokenOutput, sep);
 }
 
 void processNumeric() {

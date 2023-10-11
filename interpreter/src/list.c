@@ -73,7 +73,7 @@ void printToken(token_t x) {
         case IDENTIFIER:
             printf(",%s ", x.strVal);
             break;
-        case REGISTER:
+        case LINE_SEP:
             printf(",%ld ", x.numVal);
             break;
         case LABEL:

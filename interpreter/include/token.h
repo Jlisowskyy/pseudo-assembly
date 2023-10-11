@@ -12,8 +12,8 @@
 
 typedef enum tokenType {
     UNKNOWN,
+    OPER_SEP,
     IDENTIFIER,
-    REGISTER,
     LABEL,
     CONSTANT,
     LINE_SEP,

@@ -239,10 +239,15 @@ void processIdent() {
 
 RegReg expectRegReg() {
     RegReg result;
-    if (actToken->tkn.type != REGISTER)
+    if (actToken->tkn.type != CONSTANT)
         throwError("Instruction expects register as first operand", actToken->tkn.line);
 
     result.reg1 = actToken->tkn.numVal;
+    actToken = actToken->next;
+
+    if (actToken->tkn.type != OPER_SEP)
+        throwError("Instruction expects comma after first operand", actToken->tkn.line);
+
     actToken = actToken->next;
 
     if (actToken->tkn.type != CONSTANT)
@@ -256,11 +261,38 @@ RegReg expectRegReg() {
 
 RegIdent expectRegIdent() {
     RegIdent result;
+
+    if (actToken->tkn.type != CONSTANT)
+        throwError("Instruction expects register as first operand", actToken->tkn.line);
+
+    result.reg = actToken->tkn.numVal;
+    actToken = actToken->next;
+
+    if (actToken->tkn.type != OPER_SEP)
+        throwError("Instruction expects comma after first operand", actToken->tkn.line);
+
+    actToken = actToken->next;
+
+    if (actToken->tkn.type != IDENTIFIER)
+        throwError("Instruction expects register as second operand", actToken->tkn.line);
+
+    result.ident = actToken->tkn.strVal;
+    actToken = actToken->next;
+
+    if (actToken->tkn.type != LINE_SEP)
+        throwError("Instructions have to be separated", actToken->tkn.line);
+
+    actToken = actToken->next;
+
     return result;
 }
 
 MACHINE_BASIC_TYPE expectReg() {
-    return 0;
+    MACHINE_BASIC_TYPE result;
+
+    if (actToken->tkn.type != CONSTANT){
+        throwError("", actToken->tkn.line);
+    }
 }
 
 char *expectIdent() {
