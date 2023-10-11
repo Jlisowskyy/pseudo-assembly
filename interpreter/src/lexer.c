@@ -175,6 +175,8 @@ list_t convertPlainTextToTokens(char *plainInput) {
         }
     }
 
+    endLabel.line = line;
+    tokenOutput = pushBack(tokenOutput, endLabel);
     return tokenOutput;
 }
 

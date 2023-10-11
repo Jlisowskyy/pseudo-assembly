@@ -50,8 +50,11 @@ GHashTable* dataLabelsTable = NULL;
 // ----------------------------------------
 
 void interpFileTokens(list_t tokens) {
-    actToken = tokens.head->next;
     resetInterpState();
+
+    addToCodeTable(tokens.head);
+    actToken = tokens.head->next;
+
     // TODO add head to code labels
 
     while(actToken){
@@ -81,23 +84,34 @@ void interpCLTokens(list_t tokens) {
 // processing functions implementation
 // ----------------------------------------
 
-void processLabel() {
-    if (!actToken->next) return;
+void processLabel()
+    // used to process language construction
+{
+    node_t* labelToken;
 
-    // expects identifier, most probably an instruction
-    // TODO: check label how works here
-    if (actToken->next->tkn.type != IDENTIFIER)
-        throwError("Expects instruction after label usage", actToken->tkn.line);
+    if (!actToken->next) {
+        addToCodeTable(actToken);
+        return;
+    }
 
-    if (isDeclInstruction(actToken->next->tkn.strVal)){
-        addToDataTable(actToken);
+    labelToken = actToken;
+    actToken = actToken->next;
+
+    if (actToken->tkn.type == IDENTIFIER){
+        if (isDeclInstruction(actToken->next->tkn.strVal)){
+            addToDataTable(actToken);
+        }
+        else{
+            addToCodeTable(actToken);
+        }
+        processIdent();
+    }
+    else if (actToken->tkn.type == LABEL){
+        addToCodeTable(labelToken);
     }
     else{
-        addToCodeTable(actToken);
+        throwError("Expects instruction after label usage", actToken->tkn.line);
     }
-
-    actToken = actToken->next;
-    processIdent();
 }
 
 void addToDataTable(node_t *p) {
@@ -225,6 +239,18 @@ void processIdent() {
 
 RegReg expectRegReg() {
     RegReg result;
+    if (actToken->tkn.type != REGISTER)
+        throwError("Instruction expects register as first operand", actToken->tkn.line);
+
+    result.reg1 = actToken->tkn.numVal;
+    actToken = actToken->next;
+
+    if (actToken->tkn.type != CONSTANT)
+        throwError("Instruction expects register as second operand", actToken->tkn.line);
+
+    result.reg2 = actToken->tkn.numVal;
+    actToken = actToken->next;
+
     return result;
 }
 
