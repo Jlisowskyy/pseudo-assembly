@@ -11,6 +11,8 @@
 #define HASH(const_ptr) const_ptr[0] + 100 * const_ptr[1]
 #define GET_HASH2(a, b) a + 100 * b
 
+#define isNotRegister(token) token.type != CONSTANT || token.numVal < 0 || token.numVal >= MACHINE_REGISTERS
+
 enum {
     ADD_HASH = 'A',
     COMP_HASH = 'C',
@@ -86,6 +88,8 @@ void interpCLTokens(list_t tokens) {
 
 void processLabel()
     // used to process language construction
+
+    // TODO: remove added labels
 {
     node_t* labelToken;
 
@@ -98,13 +102,14 @@ void processLabel()
     actToken = actToken->next;
 
     if (actToken->tkn.type == IDENTIFIER){
-        if (isDeclInstruction(actToken->next->tkn.strVal)){
-            addToDataTable(actToken);
+        if (isDeclInstruction(actToken->tkn.strVal)){
+//            MACHINE_BASIC_TYPE
+            // TODO: process decl!!!! ULTIMATE IMPORT NOT WORKING WOUT THIS
+            addToDataTable(actToken->tkn, NULL);
         }
         else{
-            addToCodeTable(actToken);
+            addToCodeTable(labelToken);
         }
-        processIdent();
     }
     else if (actToken->tkn.type == LABEL){
         addToCodeTable(labelToken);
@@ -114,11 +119,11 @@ void processLabel()
     }
 }
 
-void addToDataTable(node_t *p) {
-    if (g_hash_table_contains(dataLabelsTable, p->tkn.strVal))
-        throwError("Redefinition of data label", p->tkn.line);
+void addToDataTable(token_t labelTkn, MACHINE_BASIC_TYPE *val) {
+    if (g_hash_table_contains(dataLabelsTable, labelTkn.strVal))
+        throwError("Redefinition of data label", labelTkn.line);
 
-    g_hash_table_insert(dataLabelsTable, p->tkn.strVal, &p->tkn.numVal);
+    g_hash_table_insert(dataLabelsTable, labelTkn.strVal, val);
 }
 
 void addToCodeTable(node_t *p) {
@@ -233,28 +238,62 @@ void processIdent() {
     }
 }
 
-// ---------------------------------------------
-// syntax checking function implementation
-// ---------------------------------------------
+// ------------------------------------
+// Single token expectators procs
+// ------------------------------------
 
-RegReg expectRegReg() {
-    RegReg result;
-    if (actToken->tkn.type != CONSTANT)
-        throwError("Instruction expects register as first operand", actToken->tkn.line);
+MACHINE_BASIC_TYPE expectRegWoutEOL(const char *errMsg) {
+    MACHINE_BASIC_TYPE result;
+    if (isNotRegister(actToken->tkn)){
+        throwError(errMsg, actToken->tkn.line);
+    }
 
-    result.reg1 = actToken->tkn.numVal;
+    result = actToken->tkn.numVal;
     actToken = actToken->next;
 
+    return result;
+}
+
+void expectEOL() {
+    if (actToken->tkn.type != LINE_SEP)
+        throwError("Instructions have to be separated by lines", actToken->tkn.line);
+
+    actToken = actToken->next;
+}
+
+void expectSep() {
     if (actToken->tkn.type != OPER_SEP)
         throwError("Instruction expects comma after first operand", actToken->tkn.line);
 
     actToken = actToken->next;
+}
 
-    if (actToken->tkn.type != CONSTANT)
-        throwError("Instruction expects register as second operand", actToken->tkn.line);
+char *expectIdentWoutEOL(const char *errMsg) {
+    char* result;
 
-    result.reg2 = actToken->tkn.numVal;
+    if (actToken->tkn.type != IDENTIFIER)
+        throwError(errMsg, actToken->tkn.line);
+
+    result = actToken->tkn.strVal;
     actToken = actToken->next;
+
+    return result;
+}
+
+
+
+// ---------------------------------------------
+// syntax checking function implementation
+// ---------------------------------------------
+
+
+RegReg expectRegReg() {
+    RegReg result;
+
+    result.reg1 = expectRegWoutEOL("Instruction expects register as first operand");
+    expectSep();
+    result.reg2 = expectRegWoutEOL("Instruction expects register as second operand");
+    expectEOL();
 
     return result;
 }
@@ -262,27 +301,10 @@ RegReg expectRegReg() {
 RegIdent expectRegIdent() {
     RegIdent result;
 
-    if (actToken->tkn.type != CONSTANT)
-        throwError("Instruction expects register as first operand", actToken->tkn.line);
-
-    result.reg = actToken->tkn.numVal;
-    actToken = actToken->next;
-
-    if (actToken->tkn.type != OPER_SEP)
-        throwError("Instruction expects comma after first operand", actToken->tkn.line);
-
-    actToken = actToken->next;
-
-    if (actToken->tkn.type != IDENTIFIER)
-        throwError("Instruction expects register as second operand", actToken->tkn.line);
-
-    result.ident = actToken->tkn.strVal;
-    actToken = actToken->next;
-
-    if (actToken->tkn.type != LINE_SEP)
-        throwError("Instructions have to be separated", actToken->tkn.line);
-
-    actToken = actToken->next;
+    result.reg = expectRegWoutEOL("Instruction expects register as first operand");
+    expectSep();
+    result.ident = expectIdentWoutEOL("Instruction expects register as second operand");
+    expectEOL();
 
     return result;
 }
@@ -290,13 +312,16 @@ RegIdent expectRegIdent() {
 MACHINE_BASIC_TYPE expectReg() {
     MACHINE_BASIC_TYPE result;
 
-    if (actToken->tkn.type != CONSTANT){
-        throwError("", actToken->tkn.line);
-    }
+    result = expectRegWoutEOL("Instruction takes as argument only single register");
+    expectEOL();
+    return result;
 }
 
 char *expectIdent() {
-    return NULL;
+    char* result;
+
+    expectIdentWoutEOL("Instruction takes as argument only single register");
+    expectEOL();
 }
 
 void expectDecl() {
@@ -348,11 +373,11 @@ void processLOAD() {
 }
 
 void processLOAD_REG() {
-
+    char* ident = expectIdent();
 }
 
 void processSTORE() {
-
+    char* ident = expectIdent();
 }
 
 void processLOAD_ADRESS() {
