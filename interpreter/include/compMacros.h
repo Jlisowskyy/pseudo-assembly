@@ -17,7 +17,7 @@
 
 
 
-#define DEBUG_
+//#define DEBUG_
 
 // ------------------------------------
 // Machine specification settings
