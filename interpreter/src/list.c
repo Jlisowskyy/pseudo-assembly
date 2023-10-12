@@ -88,3 +88,13 @@ void printToken(token_t x) {
 
     printf("}");
 }
+
+void removeNextNode(node_t *ptr)
+    // assumes everything is working correctly, which means, next and next next pointer existence is guaranteed
+    // due to existence of sentinel. Used to remove labels from token stream
+    // in human intelligence we trust
+{
+    node_t* temp = ptr->next->next;
+    free(ptr->next);
+    ptr->next = temp;
+}

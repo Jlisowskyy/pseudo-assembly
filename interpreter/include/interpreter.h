@@ -17,33 +17,34 @@ void interpCLTokens(list_t tokens);
 
 // processing function
 inline int isDeclInstruction(const char *ident);
-inline void processLabel();
+void * processLabel();
 inline void processIdent();
-inline void addToDataTable(token_t labelTkn, MACHINE_BASIC_TYPE *val);
-inline void addToCodeTable(node_t* p);
-inline node_t* getCodeLabel(node_t *p);
-inline MACHINE_BASIC_TYPE getDataVal(node_t *p);
+inline void addToDataTable(char *ident, void *valPtr);
+inline void addToCodeTable(char *ident, node_t *p);
+inline node_t* getCodeLabel(char *ptr);
+inline MACHINE_BASIC_INT_TYPE getDataVal(char *ptr);
+inline MACHINE_BASIC_INT_TYPE* getDataPtr(char* ptr);
 
 // syntax unpacking
 
 typedef struct RegReg{
-    MACHINE_BASIC_TYPE reg1;
-    MACHINE_BASIC_TYPE reg2;
+    MACHINE_BASIC_INT_TYPE reg1;
+    MACHINE_BASIC_INT_TYPE reg2;
 }RegReg;
 
 typedef struct RegIdent{
-    MACHINE_BASIC_TYPE reg;
+    MACHINE_BASIC_INT_TYPE reg;
     char* ident;
 } RegIdent;
 
 inline RegReg expectRegReg();
 inline RegIdent expectRegIdent();
-inline MACHINE_BASIC_TYPE expectReg();
+inline MACHINE_BASIC_INT_TYPE expectReg();
 inline char* expectIdent();
-inline void expectDecl();
+
 inline void expectEOL();
 inline void expectSep();
-inline MACHINE_BASIC_TYPE expectRegWoutEOL(const char *errMsg);
+inline MACHINE_BASIC_INT_TYPE expectRegWoutEOL(const char *errMsg);
 inline char* expectIdentWoutEOL(const char* errMsg);
 // instruction processors
 inline void processADD();
@@ -64,12 +65,15 @@ inline void processJUMP();
 inline void processJUMP_POS();
 inline void processJUMP_NEG();
 inline void processJUMP_ZERO();
-inline void processDECL();
-inline void processDEF();
+inline void * processDECL();
+inline void * processDEF();
 inline void processPRINT();
 
 // helping functions
 void printInterpState();
-void resetInterpState();
+inline void resetInterpState();
+inline void moveToNextTkn();
+inline void updateSign(MACHINE_BASIC_INT_TYPE x);
+inline void abortIfMemOverrun();
 
 #endif //INTERPRETER_INTERPRETER_H

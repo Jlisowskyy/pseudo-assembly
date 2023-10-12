@@ -30,13 +30,6 @@
 #define isIdentifier(x) (isAlph(x) || isNonAlphIdent(x))
 
 // ------------------------------
-// char consts
-// ------------------------------
-
-#define BEGIN_LABEL "_BEGIN"
-#define END_LABEL "_END"
-
-// ------------------------------
 // lexer machine states
 // ------------------------------
 
@@ -103,10 +96,9 @@ void processOperSep()
 
 void processNumeric() {
     token_t constToken = { .type = CONSTANT, .line = line, .strVal = NULL, .numVal = 0 };
-    MACHINE_BASIC_TYPE inputVal;
+    MACHINE_BASIC_INT_TYPE inputVal;
     char * resPtr;
     char * begin = tokenSource + inputPos;
-    size_t offset;
 
     inputVal = MACHINE_STR_TO_NUM_FUNC(begin, &resPtr, 10);
 
@@ -143,9 +135,8 @@ void processComment() {
 // ------------------------------------------
 
 list_t convertPlainTextToTokens(char *plainInput) {
-    token_t initLabel = { .strVal = BEGIN_LABEL, .type = LABEL, .line = 1, .numVal = 0 };
-    token_t endLabel = { .strVal = END_LABEL, .type = LABEL, .line = line, .numVal = 0 }; // TODO: CONSIDER REPLACING BY LINE SEP
-    tokenOutput = initList(initLabel);
+    token_t newLineSentinel = { .type = LINE_SEP, .numVal = 0, .strVal = NULL, .line = 1 };
+    tokenOutput = initList(newLineSentinel);
     tokenSource = plainInput;
 
     while(isNotTerm(tokenSource[inputPos])){
@@ -161,10 +152,7 @@ list_t convertPlainTextToTokens(char *plainInput) {
         else if (isNumeric(tokenSource[inputPos])){
             processNumeric();
         }
-        else if(isAlph(tokenSource[inputPos])){
-            processIdentifier();
-        }
-        else if(isNonAlphIdent(tokenSource[inputPos])){
+        else if(isAlph(tokenSource[inputPos]) || isNonAlphIdent(tokenSource[inputPos])){
             processIdentifier();
         }
         else if(isLabelSep(tokenSource[inputPos])){
@@ -178,8 +166,8 @@ list_t convertPlainTextToTokens(char *plainInput) {
         }
     }
 
-    endLabel.line = line;
-    tokenOutput = pushBack(tokenOutput, endLabel);
+    newLineSentinel.line = line;
+    tokenOutput = pushBack(tokenOutput, newLineSentinel);
     return tokenOutput;
 }
 

@@ -26,6 +26,7 @@ list_t pushBack(list_t target, DATA_T data);
 DATA_T getNextToken(node_t* extractionPoint);
 void cleanList(list_t target);
 void printTknList(list_t target);
+void removeNextNode(node_t *ptr);
 
 // not universal function designed to use only with token_t
 void printToken(token_t x);
