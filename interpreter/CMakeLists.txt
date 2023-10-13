@@ -19,9 +19,9 @@ add_executable(interpreter main.c
         include/stack.h
         src/stack.c)
 
-#find_package(PkgConfig REQUIRED)
-#pkg_check_modules(deps REQUIRED IMPORTED_TARGET glib-2.0)
-#target_link_libraries(interpreter PkgConfig::deps)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(deps REQUIRED IMPORTED_TARGET glib-2.0)
+target_link_libraries(interpreter PkgConfig::deps)
 
 #target_compile_options(interpreter PUBLIC -Wall;-Wextra;-march=native;-O3;-I/usr/include/glib-2.0;-I/usr/lib/glib-2.0/include;-I/usr/include/sysprof-6;-pthread;-lglib-2.0)
-target_compile_options(interpreter PUBLIC -Wall;-Wextra;-march=native;-O3;)
+target_compile_options(interpreter PUBLIC -Wall;-Wextra;)

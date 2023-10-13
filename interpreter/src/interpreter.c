@@ -120,9 +120,11 @@ void * processLabel()
 
             switch (HASH(actToken->tkn.strVal)) {
                 case DS_HASH:
+                    moveToNextTkn();
                     dataPtr = processDEF();
                     break;
                 case DC_HASH:
+                    moveToNextTkn();
                     dataPtr = processDECL();
                     break;
             }
@@ -164,7 +166,7 @@ node_t *getCodeLabel(char *ptr) {
     void* retVal = g_hash_table_lookup(codeLabelsTable, ptr);
 
     if (!retVal)
-        throwError("undefined code label", actToken->tkn.line - 1);
+        throwError("undefined code label", actToken->tkn.line);
 
     return retVal;
 }
@@ -192,14 +194,14 @@ int isDeclInstruction(const char *ident)
 {
     // safe: array contains addition 3 null bytes
     if (ident[0] != 'D') return NON_DECL_INSTRUCTION_FOUND;
-    if ((ident[1] == 'C' || ident[1] == 'S') && ident[2] == '\n') return DECL_INSTRUCTION_FOUND;
+    if ((ident[1] == 'C' || ident[1] == 'S') && ident[2] == '\0') return DECL_INSTRUCTION_FOUND;
     return NON_DECL_INSTRUCTION_FOUND;
 }
 
 void processIdent() {
     char* str = actToken->tkn.strVal;
 
-    if (str[2] == '\0' && str[1] == '\0') // safe: array contains addition 3 null bytes
+    if (str[2] != '\0' && str[1] != '\0') // safe: array contains addition 3 null bytes
         throwError("Expects instruction on beginning of the line", actToken->tkn.line);
 
     moveToNextTkn();
@@ -292,8 +294,6 @@ MACHINE_BASIC_INT_TYPE expectRegWoutEOL(const char *errMsg) {
 void expectEOL() {
     if (actToken->tkn.type != LINE_SEP)
         throwError("Instructions have to be separated by lines", actToken->tkn.line);
-
-    moveToNextTkn();
 }
 
 void expectSep() {
