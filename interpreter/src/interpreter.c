@@ -67,12 +67,23 @@ GHashTable* dataLabelsTable = NULL;
 // interpreter machine implementation
 // ----------------------------------------
 
+void getAllLabels(list_t tokens) {
+    pToken = tokens.head;
+    actToken = tokens.head->next;
+
+    while(actToken){
+        if (actToken->tkn.type == LABEL){
+            processLabel();
+        }
+        moveToNextTkn();
+    }
+}
+
 void interpFileTokens(list_t tokens) {
     resetInterpState();
 
     addToCodeTable("_BEGIN", tokens.head);
     addToCodeTable("_END", tokens.tail);
-    pToken = tokens.head;
     actToken = tokens.head->next;
 
     while(actToken){
@@ -81,16 +92,13 @@ void interpFileTokens(list_t tokens) {
             case IDENTIFIER:
                 processIdent();
                 break;
-            case LABEL:
-                processLabel();
-                break;
             case LINE_SEP:
                 break;
             default:
                 throwError("Unknown token type occurred\n", actToken->tkn.line);
         }
 
-        moveToNextTkn();
+        actToken = actToken->next;
     }
 }
 
@@ -204,7 +212,7 @@ void processIdent() {
     if (str[2] != '\0' && str[1] != '\0') // safe: array contains addition 3 null bytes
         throwError("Expects instruction on beginning of the line", actToken->tkn.line);
 
-    moveToNextTkn();
+    actToken = actToken->next;
 
     switch (HASH(str)) {
         case ADD_HASH:
@@ -286,7 +294,7 @@ MACHINE_BASIC_INT_TYPE expectRegWoutEOL(const char *errMsg) {
     }
 
     result = actToken->tkn.numVal;
-    moveToNextTkn();
+    actToken = actToken->next;
 
     return result;
 }
@@ -300,7 +308,7 @@ void expectSep() {
     if (actToken->tkn.type != OPER_SEP)
         throwError("Instruction expects comma after first operand", actToken->tkn.line);
 
-    moveToNextTkn();
+    actToken = actToken->next;
 }
 
 char *expectIdentWoutEOL(const char *errMsg) {
@@ -310,7 +318,7 @@ char *expectIdentWoutEOL(const char *errMsg) {
         throwError(errMsg, actToken->tkn.line);
 
     result = actToken->tkn.strVal;
-    moveToNextTkn();
+    actToken = actToken->next;
 
     return result;
 }
@@ -493,7 +501,13 @@ void * processDECL()
 
 {
     void* dataPtr = NULL;
-    char* ident = expectIdentWoutEOL("data declaration expects data type name after usage");
+    char* ident;
+
+    if (actToken->tkn.type != IDENTIFIER)
+        throwError("Instruction takes as argument only single register", actToken->tkn.line);
+
+    ident = actToken->tkn.strVal;
+    moveToNextTkn();
 
     if (strcmp(ident, machineDataTypesIdent[INTEGER]) == 0){
         dataPtr = malloc(sizeof(MACHINE_BASIC_INT_TYPE));
@@ -517,7 +531,14 @@ void * processDECL()
 }
 
 void * processDEF() {
-    char* ident = expectIdent();
+    char* ident;
+
+    if (actToken->tkn.type != IDENTIFIER)
+        throwError("Instruction takes as argument only single register", actToken->tkn.line);
+
+    ident = actToken->tkn.strVal;
+    moveToNextTkn();
+    expectEOL();
 
     if (strcmp(ident, machineDataTypesIdent[INTEGER]) == 0){
         usedRAMSpace += sizeof(MACHINE_BASIC_INT_TYPE);

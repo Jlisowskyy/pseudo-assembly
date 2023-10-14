@@ -14,6 +14,7 @@
 // main machine loops
 void interpFileTokens(list_t tokens);
 void interpCLTokens(list_t tokens);
+void getAllLabels(list_t tokens);
 
 // processing function
 inline int isDeclInstruction(const char *ident);
