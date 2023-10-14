@@ -56,6 +56,9 @@ enum {
 node_t* pToken = NULL;
 node_t* actToken = NULL;
 
+// TODO: place holder: (instruction should change token by themselves - in future)
+node_t jump_buffer = { .next = NULL };
+
 int8_t signReg = UNKNOWN_SIGN;
 MACHINE_BASIC_INT_TYPE registers[MACHINE_REGISTERS] = {0 };
 size_t usedRAMSpace = 0;
@@ -75,12 +78,13 @@ void getAllLabels(list_t tokens) {
         if (actToken->tkn.type == LABEL){
             processLabel();
         }
-        moveToNextTkn();
+        else moveToNextTkn();
     }
 }
 
 void interpFileTokens(list_t tokens) {
     resetInterpState();
+    getAllLabels(tokens);
 
     addToCodeTable("_BEGIN", tokens.head);
     addToCodeTable("_END", tokens.tail);
@@ -118,8 +122,7 @@ void * processLabel()
 {
     void* dataPtr = NULL;
     char* labelIdent = actToken->tkn.strVal;
-    removeNextNode(pToken);
-    actToken = pToken->next;
+    chopNextNode();
 
     if (actToken->tkn.type == IDENTIFIER){
 
@@ -128,11 +131,11 @@ void * processLabel()
 
             switch (HASH(actToken->tkn.strVal)) {
                 case DS_HASH:
-                    moveToNextTkn();
+                    chopNextNode();
                     dataPtr = processDEF();
                     break;
                 case DC_HASH:
-                    moveToNextTkn();
+                    chopNextNode();
                     dataPtr = processDECL();
                     break;
             }
@@ -462,7 +465,9 @@ void processLOAD_ADRESS() {
 void processJUMP() {
     char* ident = expectIdent();
     node_t* codePtr = getCodeLabel(ident);
-    actToken = codePtr;
+
+    jump_buffer.next = codePtr;
+    actToken = &jump_buffer;
 }
 
 // TODO: make single function
@@ -472,7 +477,8 @@ void processJUMP_POS() {
     node_t* codePtr = getCodeLabel(ident);
 
     if (signReg == POS){
-        actToken = codePtr;
+        jump_buffer.next = codePtr;
+        actToken = &jump_buffer;
     }
 }
 
@@ -482,7 +488,8 @@ void processJUMP_NEG() {
     node_t* codePtr = getCodeLabel(ident);
 
     if (signReg == NEG){
-        actToken = codePtr;
+        jump_buffer.next = codePtr;
+        actToken = &jump_buffer;
     }
 }
 
@@ -492,7 +499,8 @@ void processJUMP_ZERO() {
     node_t* codePtr = getCodeLabel(ident);
 
     if (signReg == ZERO){
-        actToken = codePtr;
+        jump_buffer.next = codePtr;
+        actToken = &jump_buffer;
     }
 }
 
@@ -507,7 +515,7 @@ void * processDECL()
         throwError("Instruction takes as argument only single register", actToken->tkn.line);
 
     ident = actToken->tkn.strVal;
-    moveToNextTkn();
+    chopNextNode();
 
     if (strcmp(ident, machineDataTypesIdent[INTEGER]) == 0){
         dataPtr = malloc(sizeof(MACHINE_BASIC_INT_TYPE));
@@ -516,7 +524,7 @@ void * processDECL()
 
         if (actToken->tkn.type == CONSTANT){
             *((MACHINE_BASIC_INT_TYPE*)dataPtr) = actToken->tkn.numVal;
-            moveToNextTkn();
+            chopNextNode();
         }
         else{
             throwError("Declaration expects to insert data value after data type identifier", actToken->tkn.line);
@@ -527,6 +535,7 @@ void * processDECL()
     }
 
     expectEOL();
+    chopNextNode();
     return dataPtr;
 }
 
@@ -537,8 +546,9 @@ void * processDEF() {
         throwError("Instruction takes as argument only single register", actToken->tkn.line);
 
     ident = actToken->tkn.strVal;
-    moveToNextTkn();
+    chopNextNode();
     expectEOL();
+    chopNextNode();
 
     if (strcmp(ident, machineDataTypesIdent[INTEGER]) == 0){
         usedRAMSpace += sizeof(MACHINE_BASIC_INT_TYPE);
@@ -613,4 +623,9 @@ void updateSign(int64_t x) {
 void abortIfMemOverrun() {
     if (usedRAMSpace > MACHINE_MEMORY_SIZE_BYTES)
         throwError("Program used whole memory, not possible to allocate more", actToken->tkn.line);
+}
+
+void chopNextNode() {
+    removeNextNode(pToken);
+    actToken = pToken->next;
 }

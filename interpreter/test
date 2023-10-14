@@ -23,8 +23,8 @@ DWA_ROZWIAZANIA:    L   3, JEDEN
 JEDNO_ROZWIAZANIE:  L   3, JEDEN
                     ST  3, WYNIK
                     J   KONIEC_PROGRAMU
-ZERO_ROZWIAZAN      L   3, ZERO
-                    ST  3,WYNIK
+ZERO_ROZWIAZAN:     L   3, ZERO
+                    ST  3, WYNIK
                     J   KONIEC_PROGRAMU
 
 KONIEC_PROGRAMU: PR 3
