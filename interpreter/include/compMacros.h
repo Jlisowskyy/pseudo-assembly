@@ -13,11 +13,8 @@
  * - repair all errors (THERE WAS IMPORTANT ONE WITH NULL I FORGOT)
  * - RECONSIDER PASSING PTR TO SOME SHITTY PROGRAM XDDDDDDDDD
  * - add option to compile
- * - add preprocessing labels first to enable forward jumps
  * - add some definitions stack based structured
  */
-
-
 
 //#define DEBUG_
 

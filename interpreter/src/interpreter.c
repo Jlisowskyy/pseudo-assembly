@@ -608,11 +608,11 @@ void printInterpState() {
         putchar('\n');
     }
 
-//    guint length;
-//    gpointer  arr;
-//
-//    printf("\nDefined code labels:\n");
+    printf("\nDefined code labels ( ident ::: line ):\n");
+    g_hash_table_foreach(codeLabelsTable, &printHashNodeCodeLabel, NULL);
 
+    printf("\nDefined data identifiers ( ident ::: type/value )\n");
+    g_hash_table_foreach(dataLabelsTable, &printHashNodeDataLabel, NULL);
 }
 
 void resetInterpState() {
@@ -650,4 +650,13 @@ void abortIfMemOverrun() {
 void chopNextNode() {
     removeNextNode(pToken);
     actToken = pToken->next;
+}
+
+void printHashNodeDataLabel(gpointer key, gpointer value, gpointer user_data) {
+    // TODO: add arrays information
+    printf("%s ::: %ld\n", (char*)key, *((MACHINE_BASIC_INT_TYPE*)value));
+}
+
+void printHashNodeCodeLabel(gpointer key, gpointer value, gpointer user_data) {
+    printf("%s ::: %u\n", (char*)key, ((node_t*)value)->tkn.line );
 }

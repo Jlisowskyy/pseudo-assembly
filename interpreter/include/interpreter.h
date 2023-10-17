@@ -5,6 +5,8 @@
 #ifndef INTERPRETER_INTERPRETER_H
 #define INTERPRETER_INTERPRETER_H
 
+#include <glib.h>
+
 #include "token.h"
 #include "list.h"
 
@@ -78,5 +80,7 @@ inline void updateSign(MACHINE_BASIC_INT_TYPE x);
 inline void abortIfMemOverrun();
 inline void chopNextNode();
 inline void processBreak();
+void printHashNodeCodeLabel(gpointer key, gpointer value, gpointer user_data);
+void printHashNodeDataLabel(gpointer key, gpointer value, gpointer user_data);
 
 #endif //INTERPRETER_INTERPRETER_H
