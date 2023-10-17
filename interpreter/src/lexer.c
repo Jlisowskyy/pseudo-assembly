@@ -20,7 +20,7 @@
 #define isNotNewLine(x) (x != '\n')
 #define isOperSep(x) (x == ',')
 #define isLabelSep(x) (x == ':')
-#define isNumeric(x) (x >= '0' && x <= '9')
+#define isNumeric(x) ((x >= '0' && x <= '9') || x == '-')
 //#define isAlph(x) (x >= 'A' && x <= 'z' && (x <= 'Z' || x >= 'a')) // TODO: check
 #define isAlph(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
 #define isNonAlphIdent(x) (x == '-' || x == '_')

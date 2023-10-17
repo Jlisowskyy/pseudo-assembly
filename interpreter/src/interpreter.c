@@ -39,6 +39,7 @@ enum {
     JP_HASH = 8074,
     AR_HASH = 8265,
     CR_HASH = 8267,
+    BREAK = 8266,
     DR_HASH = 8268,
     LR_HASH = 8276,
     MR_HASH = 8277,
@@ -254,6 +255,9 @@ void processIdent() {
         case AR_HASH:
             processADD_REG();
             break;
+        case BREAK:
+            processBreak();
+            break;
         case CR_HASH:
             processCOMP_REG();
             break;
@@ -374,7 +378,7 @@ char *expectIdent() {
 
 void processSUB_REG() {
     RegReg args = expectRegReg();
-    registers[args.reg1] = args.reg1 - args.reg2;
+    registers[args.reg1] -= registers[args.reg2];
     updateSign(registers[args.reg1]);
 }
 
@@ -382,13 +386,13 @@ void processADD() {
     RegIdent args = expectRegIdent();
     MACHINE_BASIC_INT_TYPE op2Val = getDataVal(args.ident);
 
-    registers[args.reg] = args.reg + op2Val;
+    registers[args.reg] += op2Val;
     updateSign(registers[args.reg]);
 }
 
 void processADD_REG() {
     RegReg args = expectRegReg();
-    registers[args.reg1] = args.reg1 + args.reg2;
+    registers[args.reg1] += registers[args.reg2];
     updateSign(registers[args.reg1]);
 }
 
@@ -396,7 +400,7 @@ void processSUB() {
     RegIdent args = expectRegIdent();
     MACHINE_BASIC_INT_TYPE op2Val = getDataVal(args.ident);
 
-    registers[args.reg] = args.reg + op2Val;
+    registers[args.reg] -= op2Val;
     updateSign(registers[args.reg]);
 }
 
@@ -404,13 +408,13 @@ void processMULT() {
     RegIdent args = expectRegIdent();
     MACHINE_BASIC_INT_TYPE op2Val = getDataVal(args.ident);
 
-    registers[args.reg] = args.reg * op2Val;
+    registers[args.reg] *= op2Val;
     updateSign(registers[args.reg]);
 }
 
 void processMULT_REG() {
     RegReg args = expectRegReg();
-    registers[args.reg1] = args.reg1 * args.reg2;
+    registers[args.reg1] *= registers[args.reg2];
     updateSign(registers[args.reg1]);
 }
 
@@ -418,25 +422,25 @@ void processDIV() {
     RegIdent args = expectRegIdent();
     MACHINE_BASIC_INT_TYPE op2Val = getDataVal(args.ident);
 
-    registers[args.reg] = args.reg / op2Val;
+    registers[args.reg] /= op2Val;
     updateSign(registers[args.reg]);
 }
 
 void processDIV_REG() {
     RegReg args = expectRegReg();
-    registers[args.reg1] = args.reg1 / args.reg2;
+    registers[args.reg1] /= registers[args.reg2];
     updateSign(registers[args.reg1]);
 }
 
 void processCOMP() {
     RegIdent args = expectRegIdent();
     MACHINE_BASIC_INT_TYPE op2Val = getDataVal(args.ident);
-    updateSign(args.reg - op2Val);
+    updateSign(registers[args.reg] - op2Val);
 }
 
 void processCOMP_REG() {
     RegReg args = expectRegReg();
-    updateSign(args.reg1 - args.reg2);
+    updateSign(registers[args.reg1] - registers[args.reg2]);
 }
 
 void processLOAD() {
@@ -569,6 +573,15 @@ void processPRINT() {
     printf("Register %ld value: %ld\n", arg, registers[arg]);
 }
 
+void processBreak() {
+    expectEOL();
+    printInterpState();
+
+    printf("\n\nPress enter to process till next breakpoint...");
+    getchar();
+    printf("\n---------------------------------------\n");
+}
+
 
 // ---------------------------------------------------
 // Helping functions
@@ -584,14 +597,22 @@ void printInterpState() {
     printf("Machine state:\nUsed memory: %zu (in Bytes)\nSign reg state: ", usedRAMSpace);
 
     if (signReg == UNKNOWN_SIGN) printf("register not set");
-    else putc(signsChars[signReg + 1], stdin);
+    else putchar(signsChars[signReg + 1]);
+    putchar('\n');
 
     for(int i = 0; i < PRINT_REG_ROWS; ++i){
         for(int j = 0; j < PRINT_REG_COLS; ++j){
-            int regIdent = i * PRINT_REG_ROWS + j;
+            int regIdent = i * PRINT_REG_COLS + j;
             printf("Reg %d: %ld\t", regIdent, registers[regIdent]);
         }
+        putchar('\n');
     }
+
+//    guint length;
+//    gpointer  arr;
+//
+//    printf("\nDefined code labels:\n");
+
 }
 
 void resetInterpState() {
@@ -601,6 +622,7 @@ void resetInterpState() {
     if (dataLabelsTable) {
         GPtrArray* values = g_hash_table_get_values_as_ptr_array(dataLabelsTable);
         for (int i = 0; i < values->len; ++i) free(values->pdata[i]);
+        g_free(values);
         g_hash_table_remove_all(dataLabelsTable);
     }
     else dataLabelsTable = g_hash_table_new(g_str_hash, g_str_equal);

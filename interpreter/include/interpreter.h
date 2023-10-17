@@ -77,5 +77,6 @@ inline void moveToNextTkn();
 inline void updateSign(MACHINE_BASIC_INT_TYPE x);
 inline void abortIfMemOverrun();
 inline void chopNextNode();
+inline void processBreak();
 
 #endif //INTERPRETER_INTERPRETER_H
