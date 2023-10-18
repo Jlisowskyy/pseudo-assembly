@@ -18,5 +18,7 @@ inline void processOperSep();
 inline void processNumeric();
 inline void processIdentifier();
 inline void processComment();
+inline void processArray();
+inline void processDeclBeg();
 
 #endif //INTERPRETER_LEXER_H

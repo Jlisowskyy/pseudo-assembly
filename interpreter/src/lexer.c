@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "../include/lexer.h"
 #include "../include/errors.h"
@@ -15,6 +16,7 @@
 
 #define FALSE 0
 #define TRUE 1
+#define DECL_MET_BEFORE 1
 #define isBlank(x) (x == ' ' || x =='\t')
 #define isNewLine(x) (x == '\n')
 #define isNotNewLine(x) (x != '\n')
@@ -28,6 +30,9 @@
 #define isNotEOF(x) (x != EOF)
 #define isNotTerm(x) (x != '\0')
 #define isIdentifier(x) (isAlph(x) || isNonAlphIdent(x))
+#define isArrOper(x) (x == '*')
+#define isDeclEnd(x) (x == ')')
+#define isDeclBeg(x) (x == '(')
 
 // ------------------------------
 // lexer machine states
@@ -125,9 +130,51 @@ void processIdentifier() {
 }
 
 void processComment() {
-    while(isNotNewLine(tokenSource[inputPos]) && isNotEOF(tokenSource[inputPos])){
+    while(isNotNewLine(tokenSource[inputPos])){
         tokenSource[inputPos++] = '\0';
     }
+}
+
+void processArray() {
+    tokenSource[inputPos] = '\0';
+    ++inputPos;
+
+    if (tokenOutput.tail->tkn.type != CONSTANT){
+        throwError("expect number aka size of array before declaration", tokenOutput.tail->tkn.line);
+    }
+
+    tokenOutput.tail->tkn.type = ARR_SIZE;
+}
+
+void processDeclBeg() {
+    tokenSource[inputPos] = '\0';
+    ++inputPos;
+
+    if (tokenOutput.tail->tkn.type != IDENTIFIER){
+        throwError("\"(\" - definition operator expects type identifier before", tokenOutput.tail->tkn.line);
+    }
+
+    if (strcmp(tokenOutput.tail->tkn.strVal, machineDataTypesIdent[INTEGER]) == 0){
+        if (tokenOutput.tail->tkn.numVal == DECL_MET_BEFORE){
+            throwError("only single use of \"(\" allowed", tokenOutput.tail->tkn.line);
+        }
+
+        tokenOutput.tail->tkn.type = INTEGER_TYPE;
+        tokenOutput.tail->tkn.numVal = DECL_MET_BEFORE;
+    }
+    else{
+        throwError("Unexpected data type occurred", tokenOutput.tail->tkn.line);
+    }
+
+    size_t my_pos = inputPos;
+    while(isNotNewLine(tokenSource[++my_pos])){
+        if (isDeclEnd(tokenSource[my_pos])){
+            tokenSource[my_pos] = ' ';
+            return;
+        }
+    }
+
+    throwError("Parenthesis is not closed", tokenOutput.tail->tkn.line);
 }
 
 // ------------------------------------------
@@ -160,6 +207,12 @@ list_t convertPlainTextToTokens(char *plainInput) {
         }
         else if (isComment(tokenSource[inputPos])){
             processComment();
+        }
+        else if (isArrOper(tokenSource[inputPos])){
+            processArray();
+        }
+        else if(isDeclBeg(tokenSource[inputPos])){
+            processDeclBeg();
         }
         else{
             throwUnrecognizedCharError(line, tokenSource[inputPos]);

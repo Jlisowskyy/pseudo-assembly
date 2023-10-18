@@ -78,7 +78,7 @@ inline void resetInterpState();
 inline void moveToNextTkn();
 inline void updateSign(MACHINE_BASIC_INT_TYPE x);
 inline void abortIfMemOverrun();
-inline void chopNextNode();
+inline void chopActNode();
 inline void processBreak();
 void printHashNodeCodeLabel(gpointer key, gpointer value, gpointer user_data);
 void printHashNodeDataLabel(gpointer key, gpointer value, gpointer user_data);

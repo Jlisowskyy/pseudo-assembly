@@ -43,9 +43,10 @@ int interpreterFile(const char *fileName) {
     fileSize = ftell(workFile);
     rewind(workFile);
 
-    plainInput = malloc(fileSize + NULL_BYTES);
+    plainInput = malloc(fileSize + NULL_BYTES + NEW_LINE_SENTINEL);
     fread(plainInput, sizeof(char), fileSize, workFile);
-    for(size_t i = 0; i < NULL_BYTES; ++i) plainInput[fileSize + i] = '\0';
+    plainInput[fileSize] = '\n'; // new line sentinel to be added to token list
+    for(size_t i = 0; i < NULL_BYTES; ++i) plainInput[fileSize + NEW_LINE_SENTINEL + i] = '\0';
     fclose(workFile);
 
     interpret(plainInput);

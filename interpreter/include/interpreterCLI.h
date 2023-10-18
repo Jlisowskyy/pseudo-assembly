@@ -12,7 +12,8 @@
 #define CLI_BUFFER_SIZE 4098  //4kb for characters 2bytes for '\n' and '\0'
 #define UNRECOGNIZED_FILE 1
 #define NO_ARGUMENTS 1
-#define NULL_BYTES 3
+#define NULL_BYTES 2
+#define NEW_LINE_SENTINEL 1
 
 enum inputCommands { NO_COMMANDS = 1, COMMAND_PROCESSED = 2, ADD_LINE = 'a', PRINT = 'p', REMOVE = 'r', EXIT = 'q' };
 

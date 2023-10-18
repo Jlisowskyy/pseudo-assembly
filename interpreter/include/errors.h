@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 void writeHelpOut(char *unrecognizedFile);
+void throwStructuralError(const char* msg);
 void throwError(const char* msg, size_t line);
 void throwUnrecognizedCharError(size_t line, char unrecognized);
 

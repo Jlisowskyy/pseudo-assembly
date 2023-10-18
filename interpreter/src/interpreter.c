@@ -8,14 +8,6 @@
 #include "../include/errors.h"
 #include "../include/interpreter.h"
 
-enum machineDataTypes {
-    INTEGER
-};
-
-const char* machineDataTypesIdent[] = {
-    "INTEGER"
-};
-
 #define UNKNOWN_SIGN 2
 #define POS 1
 #define ZERO 0
@@ -123,7 +115,7 @@ void * processLabel()
 {
     void* dataPtr = NULL;
     char* labelIdent = actToken->tkn.strVal;
-    chopNextNode();
+    chopActNode();
 
     if (actToken->tkn.type == IDENTIFIER){
 
@@ -132,11 +124,11 @@ void * processLabel()
 
             switch (HASH(actToken->tkn.strVal)) {
                 case DS_HASH:
-                    chopNextNode();
+                    chopActNode();
                     dataPtr = processDEF();
                     break;
                 case DC_HASH:
-                    chopNextNode();
+                    chopActNode();
                     dataPtr = processDECL();
                     break;
             }
@@ -513,22 +505,32 @@ void * processDECL()
 
 {
     void* dataPtr = NULL;
-    char* ident;
+    size_t allocSize = 1;
+    tokenType_t type;
 
-    if (actToken->tkn.type != IDENTIFIER)
-        throwError("Instruction takes as argument only single register", actToken->tkn.line);
+    if (actToken->tkn.type == ARR_SIZE){
+        if (actToken->tkn.numVal < 1){
+            throwError("Expected array size is bigger than 0", actToken->tkn.line);
+        }
 
-    ident = actToken->tkn.strVal;
-    chopNextNode();
+        allocSize = actToken->tkn.numVal;
+        chopActNode();
+    }
 
-    if (strcmp(ident, machineDataTypesIdent[INTEGER]) == 0){
-        dataPtr = malloc(sizeof(MACHINE_BASIC_INT_TYPE));
-        usedRAMSpace += sizeof(MACHINE_BASIC_INT_TYPE);
+    type = actToken->tkn.type;
+    chopActNode();
+
+    if (type == INTEGER_TYPE){
+        dataPtr = malloc(sizeof(MACHINE_BASIC_INT_TYPE) * allocSize);
+        usedRAMSpace += sizeof(MACHINE_BASIC_INT_TYPE) * allocSize;
         abortIfMemOverrun();
 
         if (actToken->tkn.type == CONSTANT){
-            *((MACHINE_BASIC_INT_TYPE*)dataPtr) = actToken->tkn.numVal;
-            chopNextNode();
+
+            for (size_t i = 0; i < allocSize; ++i){
+                ((MACHINE_BASIC_INT_TYPE*)dataPtr)[i] = actToken->tkn.numVal;
+            }
+            chopActNode();
         }
         else{
             throwError("Declaration expects to insert data value after data type identifier", actToken->tkn.line);
@@ -539,25 +541,37 @@ void * processDECL()
     }
 
     expectEOL();
-    chopNextNode();
+    chopActNode();
     return dataPtr;
 }
 
 void * processDEF() {
+    tokenType_t type;
+    size_t allocSize = 1;
     char* ident;
 
-    if (actToken->tkn.type != IDENTIFIER)
-        throwError("Instruction takes as argument only single register", actToken->tkn.line);
+    if (actToken->tkn.type == ARR_SIZE){
+        if (actToken->tkn.numVal < 1){
+            throwError("Expected array size is bigger than 0", actToken->tkn.line);
+        }
+
+        allocSize = actToken->tkn.numVal;
+        chopActNode();
+    }
+
+    if (actToken->tkn.type != IDENTIFIER){
+        throwError("expected data type label after declaration", actToken->tkn.line);
+    }
 
     ident = actToken->tkn.strVal;
-    chopNextNode();
+    chopActNode();
     expectEOL();
-    chopNextNode();
+    chopActNode();
 
     if (strcmp(ident, machineDataTypesIdent[INTEGER]) == 0){
-        usedRAMSpace += sizeof(MACHINE_BASIC_INT_TYPE);
+        usedRAMSpace += sizeof(MACHINE_BASIC_INT_TYPE) * allocSize;
         abortIfMemOverrun();
-        return malloc(sizeof(MACHINE_BASIC_INT_TYPE));
+        return malloc(sizeof(MACHINE_BASIC_INT_TYPE) * allocSize);
     }
     else{
         throwError("Unrecognized data type name encountered", actToken->tkn.line);
@@ -647,7 +661,7 @@ void abortIfMemOverrun() {
         throwError("Program used whole memory, not possible to allocate more", actToken->tkn.line);
 }
 
-void chopNextNode() {
+void chopActNode() {
     removeNextNode(pToken);
     actToken = pToken->next;
 }

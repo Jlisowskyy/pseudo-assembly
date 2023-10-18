@@ -9,6 +9,11 @@
 #include "compMacros.h"
 
 #define INSTRUCTION_COUNT 21
+#define DATA_TYPES_COUNT 1
+enum machineDataTypes {
+    INTEGER
+};
+extern const char* machineDataTypesIdent[DATA_TYPES_COUNT];
 
 typedef enum tokenType {
     UNKNOWN,
@@ -17,6 +22,8 @@ typedef enum tokenType {
     LABEL,
     CONSTANT,
     LINE_SEP,
+    ARR_SIZE,
+    INTEGER_TYPE,
 } tokenType_t;
 
 typedef struct token{

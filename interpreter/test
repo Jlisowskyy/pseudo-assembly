@@ -1,10 +1,13 @@
-A:  DC INTEGER -2
-B:  DC INTEGER 3
-C:  DC INTEGER 8
+# test for number overflow
+# dodaj sprawdzanie czy poprzedni token w to new line w erorrze
+# dodaj overflow checks na bufferze XD
+A:  DC INTEGER(2)
+B:  DC INTEGER(-8)
+C:  DC INTEGER(8)
 WYNIK: DS INTEGER
-ZERO:   DC INTEGER 0
-JEDEN: DC INTEGER 1
-CZTERY: DC INTEGER 4
+ZERO:   DC INTEGER(0)
+JEDEN: DC INTEGER(1)
+CZTERY: DC INTEGER(4)
 
 L   1, B
 M   1, B
