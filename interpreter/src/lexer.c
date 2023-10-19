@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <errno.h>
 
 #include "../include/lexer.h"
 #include "../include/errors.h"
@@ -16,6 +17,7 @@
 
 #define FALSE 0
 #define TRUE 1
+#define READ_ADDRESS_FROM "O"
 #define DECL_MET_BEFORE 1
 #define isBlank(x) (x == ' ' || x =='\t')
 #define isNewLine(x) (x == '\n')
@@ -107,6 +109,10 @@ void processNumeric() {
 
     inputVal = MACHINE_STR_TO_NUM_FUNC(begin, &resPtr, 10);
 
+    if (errno == ERANGE){
+        throwError("Passed number exceeds machine basic type max values", line);
+    }
+
     if (resPtr == tokenSource){
         throwError("Error occurred during numeric conversion of input", line);
     }
@@ -151,7 +157,7 @@ void processDeclBeg() {
     ++inputPos;
 
     if (tokenOutput.tail->tkn.type != IDENTIFIER){
-        throwError("\"(\" - definition operator expects type identifier before", tokenOutput.tail->tkn.line);
+        throwError("\"(\" - definition operator expects identifier before", tokenOutput.tail->tkn.line);
     }
 
     if (strcmp(tokenOutput.tail->tkn.strVal, machineDataTypesIdent[INTEGER]) == 0){
@@ -162,8 +168,11 @@ void processDeclBeg() {
         tokenOutput.tail->tkn.type = INTEGER_TYPE;
         tokenOutput.tail->tkn.numVal = DECL_MET_BEFORE;
     }
+    else if (strcmp(tokenOutput.tail->tkn.strVal, READ_ADDRESS_FROM) == 0){
+        tokenOutput.tail->tkn.type = ADDRESS_READ;
+    }
     else{
-        throwError("Unexpected data type occurred", tokenOutput.tail->tkn.line);
+        throwError("Not allowed usage of parenthesis: expected only in data definition and o(reg) construction", tokenOutput.tail->tkn.line);
     }
 
     size_t my_pos = inputPos;

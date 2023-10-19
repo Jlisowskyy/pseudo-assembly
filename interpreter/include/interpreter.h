@@ -26,7 +26,7 @@ inline void addToDataTable(char *ident, void *valPtr);
 inline void addToCodeTable(char *ident, node_t *p);
 inline node_t* getCodeLabel(char *ptr);
 inline MACHINE_BASIC_INT_TYPE getDataVal(char *ptr);
-inline MACHINE_BASIC_INT_TYPE* getDataPtr(char* ptr);
+inline char * getDataPtr(char* ptr);
 
 // syntax unpacking
 
@@ -34,6 +34,11 @@ typedef struct RegReg{
     MACHINE_BASIC_INT_TYPE reg1;
     MACHINE_BASIC_INT_TYPE reg2;
 }RegReg;
+
+typedef struct RegAddress{
+    MACHINE_BASIC_INT_TYPE reg;
+    MACHINE_BASIC_INT_TYPE address;
+}RegAddress;
 
 typedef struct RegIdent{
     MACHINE_BASIC_INT_TYPE reg;
@@ -44,6 +49,7 @@ inline RegReg expectRegReg();
 inline RegIdent expectRegIdent();
 inline MACHINE_BASIC_INT_TYPE expectReg();
 inline char* expectIdent();
+inline RegAddress expectRegAddress();
 
 inline void expectEOL();
 inline void expectSep();
@@ -71,6 +77,7 @@ inline void processJUMP_ZERO();
 inline void * processDECL();
 inline void * processDEF();
 inline void processPRINT();
+inline void processBreak();
 
 // helping functions
 void printInterpState();
@@ -79,8 +86,8 @@ inline void moveToNextTkn();
 inline void updateSign(MACHINE_BASIC_INT_TYPE x);
 inline void abortIfMemOverrun();
 inline void chopActNode();
-inline void processBreak();
 void printHashNodeCodeLabel(gpointer key, gpointer value, gpointer user_data);
 void printHashNodeDataLabel(gpointer key, gpointer value, gpointer user_data);
+inline uint32_t getCorrectLine(token_t);
 
 #endif //INTERPRETER_INTERPRETER_H

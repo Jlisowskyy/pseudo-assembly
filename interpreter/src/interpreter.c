@@ -14,7 +14,6 @@
 #define NEG (-1)
 
 #define HASH(const_ptr) (const_ptr[0] + 100 * const_ptr[1])
-
 #define isNotRegister(token) token.type != CONSTANT || token.numVal < 0 || token.numVal >= MACHINE_REGISTERS
 
 enum {
@@ -184,13 +183,13 @@ MACHINE_BASIC_INT_TYPE getDataVal(char *ptr) {
     return *((MACHINE_BASIC_INT_TYPE*)retVal);
 }
 
-MACHINE_BASIC_INT_TYPE *getDataPtr(char *ptr) {
+char * getDataPtr(char *ptr) {
     void* retVal = g_hash_table_lookup(dataLabelsTable, ptr);
 
     if (!retVal)
         throwError("undefined code label", actToken->tkn.line - 1);
 
-    return ((MACHINE_BASIC_INT_TYPE*)retVal);
+    return ((char*)retVal);
 }
 
 int isDeclInstruction(const char *ident)
@@ -342,7 +341,38 @@ RegIdent expectRegIdent() {
 
     result.reg = expectRegWoutEOL("Instruction expects register as first operand");
     expectSep();
-    result.ident = expectIdentWoutEOL("Instruction expects register as second operand");
+    result.ident = expectIdentWoutEOL("Instruction expects identifier as second operand");
+    expectEOL();
+
+    return result;
+}
+
+RegAddress expectRegAddress() {
+    RegAddress result;
+
+    result.reg = expectRegWoutEOL("Instruction expects register as first operand");
+    expectSep();
+
+    if (actToken->tkn.type == ADDRESS_READ){
+        actToken = actToken->next;
+
+        if (actToken->tkn.type != CONSTANT){
+            throwError("Read address operator ( o(reg) ) - expects register", actToken->tkn.line);
+        }
+
+        if (actToken->tkn.numVal < 0 || actToken->tkn.numVal >= MACHINE_REGISTERS){
+            throwError("Passed number doesn't match machine registers count", actToken->tkn.line);
+        }
+
+        result.address = registers[actToken->tkn.numVal];
+        actToken = actToken->next;
+    }
+    else{
+        char* ident = expectIdentWoutEOL("Instruction expects identifier as second operand");
+        char* address = getDataPtr(ident);
+
+        result.address = (MACHINE_BASIC_INT_TYPE)address;
+    }
     expectEOL();
 
     return result;
@@ -436,8 +466,8 @@ void processCOMP_REG() {
 }
 
 void processLOAD() {
-    RegIdent args = expectRegIdent();
-    registers[args.reg] = getDataVal(args.ident);
+    RegAddress args = expectRegAddress();
+    registers[args.reg] = *((MACHINE_BASIC_INT_TYPE*)args.address);
 }
 
 void processLOAD_REG() {
@@ -446,10 +476,8 @@ void processLOAD_REG() {
 }
 
 void processSTORE() {
-    RegIdent args = expectRegIdent();
-    MACHINE_BASIC_INT_TYPE* ptr = getDataPtr(args.ident);
-
-    *ptr = registers[args.reg];
+    RegAddress args = expectRegAddress();
+    *((MACHINE_BASIC_INT_TYPE*)args.address) = registers[args.reg];
 }
 
 // TODO: TOTALLY UNSAFE SHIT XDDDDDDDDDD
@@ -673,4 +701,8 @@ void printHashNodeDataLabel(gpointer key, gpointer value, gpointer user_data) {
 
 void printHashNodeCodeLabel(gpointer key, gpointer value, gpointer user_data) {
     printf("%s ::: %u\n", (char*)key, ((node_t*)value)->tkn.line );
+}
+
+uint32_t getCorrectLine(token_t x) {
+    return x.line;
 }

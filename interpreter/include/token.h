@@ -23,6 +23,7 @@ typedef enum tokenType {
     CONSTANT,
     LINE_SEP,
     ARR_SIZE,
+    ADDRESS_READ,
     INTEGER_TYPE,
 } tokenType_t;
 
