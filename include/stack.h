@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 
+// TODO: not used yet
+
 typedef struct ch_stack{
     char* arr;
     size_t sizeMax;
@@ -18,7 +20,5 @@ typedef struct stack64{
     size_t sizeMax;
     size_t used;
 }stack64_t;
-
-
 
 #endif //INTERPRETER_STACK_H

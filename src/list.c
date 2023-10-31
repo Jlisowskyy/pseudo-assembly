@@ -18,11 +18,15 @@ list_t pushBack(list_t target, DATA_T data)
     return target;
 }
 
-DATA_T getNextToken(node_t *extractionPoint) {
+DATA_T getNextToken(node_t *extractionPoint)
+    // Does not check existence of next node, expected usage: checking two nods synchronously
+{
     return extractionPoint->next->tkn;
 }
 
-void cleanList(list_t target) {
+void cleanList(list_t target)
+    // de-allocation of list
+{
     node_t* actual = target.head;
     node_t* prev;
 
@@ -33,7 +37,9 @@ void cleanList(list_t target) {
     }
 }
 
-list_t initList(token_t data) {
+list_t initList(token_t data)
+    // simple list-factory
+{
     list_t result;
     node_t* newNode = malloc(sizeof(node_t));
 
@@ -42,6 +48,18 @@ list_t initList(token_t data) {
     result.tail = result.head = newNode;
     return result;
 }
+
+void removeNextNode(node_t *ptr)
+// assumes everything is working correctly, which means, next and next next pointer existence is guaranteed
+// due to existence of sentinel. Used to remove labels from token stream
+// in human intelligence we trust
+{
+    node_t* temp = ptr->next->next;
+    free(ptr->next);
+    ptr->next = temp;
+}
+
+#ifdef DEBUG_
 
 void printTknList(list_t target) {
     size_t tokenCount = 0;
@@ -89,12 +107,4 @@ void printToken(token_t x) {
     printf("}");
 }
 
-void removeNextNode(node_t *ptr)
-    // assumes everything is working correctly, which means, next and next next pointer existence is guaranteed
-    // due to existence of sentinel. Used to remove labels from token stream
-    // in human intelligence we trust
-{
-    node_t* temp = ptr->next->next;
-    free(ptr->next);
-    ptr->next = temp;
-}
+#endif // DEBUG_

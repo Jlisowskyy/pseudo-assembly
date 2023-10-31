@@ -16,6 +16,14 @@
 #define HASH(const_ptr) (const_ptr[0] + 100 * const_ptr[1])
 #define isNotRegister(token) token.type != CONSTANT || token.numVal < 0 || token.numVal >= MACHINE_REGISTERS
 
+/* -----------------------------------------------------------------------------------------
+ *                                  IMPORTANT NOTE
+ *
+ *  To not use additional hashtable on instruction names there is used simplified hashing function
+ *  used inside switch statement. It is designed to remains its unambiguity only with readable characters
+ * ----------------------------------------------------------------------------------------- */
+
+// precalculated hashes
 enum {
     ADD_HASH = 'A',
     COMP_HASH = 'C',
@@ -45,11 +53,13 @@ enum {
 // global interpreter machine states
 // ---------------------------------------
 
+// used only in labeling procedure
 node_t* pToken = NULL;
+// used inside labeling procedure and interpreting procedure
 node_t* actToken = NULL;
 
 // TODO: place holder: (instruction should change token by themselves - in future)
-node_t jump_buffer = { .next = NULL };
+node_t jumpBuffer = { .next = NULL };
 
 int8_t signReg = UNKNOWN_SIGN;
 MACHINE_BASIC_INT_TYPE registers[MACHINE_REGISTERS] = {0 };
@@ -62,7 +72,9 @@ GHashTable* dataLabelsTable = NULL;
 // interpreter machine implementation
 // ----------------------------------------
 
-void getAllLabels(list_t tokens) {
+void getAllLabels(list_t tokens)
+    // preprocessing procedure used to extract and remove labels from stream, what makes jumping possible
+{
     pToken = tokens.head;
     actToken = tokens.head->next;
 
@@ -74,7 +86,9 @@ void getAllLabels(list_t tokens) {
     }
 }
 
-void interpFileTokens(list_t tokens) {
+void interpFileTokens(list_t tokens)
+    // main interpreting loop
+{
     resetInterpState();
     getAllLabels(tokens);
 
@@ -107,7 +121,8 @@ void interpCLTokens(list_t tokens) {
 // ----------------------------------------
 
 void * processLabel()
-    // used to process language construction
+    // Recursive function used to extract labels from single line.
+    // Recursive call is used to extract more than one label per line
 
     // TODO: remove recursive call
     // TODO: unprotected malloc
@@ -151,6 +166,14 @@ void * processLabel()
     return dataPtr;
 }
 
+// ----------------------------------
+// Configurable hash table zone
+// ----------------------------------
+
+#pragma region Depend
+
+// To replace glib dependency just modify functions below
+
 void addToDataTable(char *ident, void *valPtr) {
     if (g_hash_table_contains(dataLabelsTable, ident))
         throwError("Redefinition of data label", actToken->tkn.line - 1);
@@ -192,8 +215,14 @@ char * getDataPtr(char *ptr) {
     return ((char*)retVal);
 }
 
+#pragma endregion Depend
+
+// ------------------------------
+//
+// ------------------------------
+
 int isDeclInstruction(const char *ident)
-// Checks if passed identifier contains some decl function in fast way
+    // Checks if passed identifier contains some decl function in fast way
 {
     // safe: array contains addition 3 null bytes
     if (ident[0] != 'D') return NON_DECL_INSTRUCTION_FOUND;
@@ -201,7 +230,9 @@ int isDeclInstruction(const char *ident)
     return NON_DECL_INSTRUCTION_FOUND;
 }
 
-void processIdent() {
+void processIdent()
+    // Hash table replacing function. Decodes instruction from tokens and invokes correct procedure
+{
     char* str = actToken->tkn.strVal;
 
     if (str[2] != '\0' && str[1] != '\0') // safe: array contains addition 3 null bytes
@@ -282,7 +313,7 @@ void processIdent() {
 }
 
 // ------------------------------------
-// Single token expectators procs
+// Single token expectating procs
 // ------------------------------------
 
 MACHINE_BASIC_INT_TYPE expectRegWoutEOL(const char *errMsg) {
@@ -490,47 +521,35 @@ void processJUMP() {
     char* ident = expectIdent();
     node_t* codePtr = getCodeLabel(ident);
 
-    jump_buffer.next = codePtr;
-    actToken = &jump_buffer;
+    jumpBuffer.next = codePtr;
+    actToken = &jumpBuffer;
 }
 
-// TODO: make single function
-void processJUMP_POS() {
+void processJUMP_COND(int8_t sign)
+{
     char* ident = expectIdent();
-
     node_t* codePtr = getCodeLabel(ident);
 
-    if (signReg == POS){
-        jump_buffer.next = codePtr;
-        actToken = &jump_buffer;
+    if (signReg == sign){
+        jumpBuffer.next = codePtr;
+        actToken = &jumpBuffer;
     }
+}
+
+void processJUMP_POS() {
+    processJUMP_COND(POS);
 }
 
 void processJUMP_NEG() {
-    char* ident = expectIdent();
-
-    node_t* codePtr = getCodeLabel(ident);
-
-    if (signReg == NEG){
-        jump_buffer.next = codePtr;
-        actToken = &jump_buffer;
-    }
+    processJUMP_COND(NEG);
 }
 
 void processJUMP_ZERO() {
-    char* ident = expectIdent();
-
-    node_t* codePtr = getCodeLabel(ident);
-
-    if (signReg == ZERO){
-        jump_buffer.next = codePtr;
-        actToken = &jump_buffer;
-    }
+    processJUMP_COND(ZERO);
 }
 
 // TODO: think through usage of tagged union
 void * processDECL()
-
 {
     void* dataPtr = NULL;
     size_t allocSize = 1;

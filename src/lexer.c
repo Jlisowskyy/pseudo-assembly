@@ -101,7 +101,13 @@ void processOperSep()
     tokenOutput = pushBack(tokenOutput, sep);
 }
 
-void processNumeric() {
+void processNumeric()
+    // converts character input to actual numeric values and adds to tokens
+    // throws when:
+    // - number is too big
+    // - number is invalid
+    // - generally all errors returned by strtol
+{
     token_t constToken = { .type = CONSTANT, .line = line, .strVal = NULL, .numVal = 0 };
     MACHINE_BASIC_INT_TYPE inputVal;
     char * resPtr;
@@ -124,7 +130,7 @@ void processNumeric() {
     tokenOutput = pushBack(tokenOutput, constToken);
 }
 
-void processIdentifier() {
+void processIdentifier(){
     token_t tkn = { .type = IDENTIFIER, .line = line, .strVal = tokenSource + inputPos, .numVal = 0 };
     // TODO: check for nums in labels
 

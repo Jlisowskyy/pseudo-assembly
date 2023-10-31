@@ -71,6 +71,7 @@ inline void processLOAD_REG();
 inline void processSTORE();
 inline void processLOAD_ADRESS();
 inline void processJUMP();
+void processJUMP_COND(int8_t sign);
 inline void processJUMP_POS();
 inline void processJUMP_NEG();
 inline void processJUMP_ZERO();

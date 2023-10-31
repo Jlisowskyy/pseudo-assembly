@@ -13,7 +13,7 @@
 #include "../include/compMacros.h"
 
 void interpreterMain(int argc, const char **argv)
-    // entry point to the program, invokes correct behaving interaface
+    // entry point to the program, invokes correct behaving interface
 {
     int result;
 
@@ -31,7 +31,9 @@ void interpreterMain(int argc, const char **argv)
     }
 }
 
-int interpreterFile(const char *fileName) {
+int interpreterFile(const char *fileName)
+    // opens, loads whole file into memory and finally add necessary modifications
+{
     FILE* workFile;
     size_t fileSize;
     char* plainInput;
@@ -45,15 +47,21 @@ int interpreterFile(const char *fileName) {
 
     plainInput = malloc(fileSize + NULL_BYTES + NEW_LINE_SENTINEL);
     fread(plainInput, sizeof(char), fileSize, workFile);
-    plainInput[fileSize] = '\n'; // new line sentinel to be added to token list
+    plainInput[fileSize] = '\n';
+    // new line sentinel to be added to token list, used to prevent checking inside of syntax analyzers
+
     for(size_t i = 0; i < NULL_BYTES; ++i) plainInput[fileSize + NEW_LINE_SENTINEL + i] = '\0';
     fclose(workFile);
 
     interpret(plainInput);
     free(plainInput);
+    return 0;
 }
 
-void interpreterInteractive() {
+void interpreterInteractive()
+    // reads line of code from stdin and interprets it interactivly
+    // TODO
+{
     char buffer[CLI_BUFFER_SIZE];
     int inputState;
     list_t tokens = { .head = NULL, .tail = NULL };
@@ -73,7 +81,11 @@ void interpreterInteractive() {
     printf("Terminated successfully!\n");
 }
 
-void interpret(char *unprocessedContent) {
+void interpret(char *unprocessedContent)
+    // unprocessedContent - whole file without EOF, with added 2 null bytes '\0' and \n value at the end ( "\0\0\n")
+    // \0\0 are guard for identifiers hash checking
+    // \n is guard to used to simplify EOF OR EOL just to EOL check
+{
     list_t tokens;
 
     tokens = convertPlainTextToTokens(unprocessedContent);
@@ -89,7 +101,9 @@ void interpret(char *unprocessedContent) {
 // other helping function implementation
 // -------------------------------------------
 
-int checkForCommandInput(char *buff, list_t tkns) {
+int checkForCommandInput(char *buff, list_t tkns)
+    // dispatching command inside interactive mode
+{
     if (buff[1] != '\n') return NO_COMMANDS;
 
     switch (buff[0]) {
