@@ -11,13 +11,13 @@
 ## Introduction
 
 Simple project recreationally made in C. Goal is to make interpreted and simplified assembly like language.
-It is my starting point to get into world of compilers and interpreters.
+It is my starting point to get into the world of compilers and interpreters.
 
 ## Getting Started
 
 ### Prerequisites
 
-- GTK's glib2.0 for hash tables - possible to replace with any hashtable lib
+- GTK's glib2.0 for hash tables—possible to replace with any hashtable lib
 - any C compiler
 
 ### Installation
@@ -25,18 +25,20 @@ It is my starting point to get into world of compilers and interpreters.
 Install dotnet template using CLI or just follow MonoGame's tutorial:
 
 ```shell
-gcc -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -pthread -O3 -Wall -Wextra -march=native src/errors.c src/interpreter.c src/interpreterCLI.c src/lexer.c src/list.c src/stack.c src/token.c main.c -o interpreter -lglib-2.0
+gcc -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -pthread -O3 -Wall -Wextra -march=native src/* main.c -o interpreter -lglib-2.0
 ```
 ## Usage
 
-For any syntax explanation refer to pdfs inside Docs folder. Currently only file interpreting is working.
-Just invoke application with file name as command line argument.
+For any syntax explanation, refer to pdfs inside the Docs folder.
+Currently only file interpreting is working.
+Invoke application with file name as command line argument.
 
 ```shell
 ./interpreter testFile
 ```
-
-Use BR instruction to inject breakpoint inside of your code. It will display whole state of the machine.
+File with name testFile contains example usage of the interpreter.
+Program should find root of simple 1-grade polynomial.
+Use BR instruction to inject breakpoint inside your code, it will display the whole state of the machine.
 
 ## Roadmap
 
@@ -49,6 +51,7 @@ However, future plans include the incorporation of the following features:
 - [ ] Actual translation to assembly to compare with real code
 - [ ] Interactive code writing in shell
 - [ ] Stacks and possibly functions
+- [ ] Detailed documentation
 
 ## License
 
